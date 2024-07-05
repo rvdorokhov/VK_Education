@@ -1,0 +1,5 @@
+﻿  sorts.cpp
+C:\Users\1\Desktop\Бомонка\VK Education\Алгоритмы и структуры данных\Сортировки\sorts\sorts\sorts.cpp(25,21): warning C4101: m: неиспользованная локальная переменная
+C:\Users\1\Desktop\Бомонка\VK Education\Алгоритмы и структуры данных\Сортировки\sorts\sorts\sorts.cpp(6,50): warning C4267: инициализация: преобразование из "size_t" в "unsigned int"; возможна потеря данных
+C:\Users\1\Desktop\Бомонка\VK Education\Алгоритмы и структуры данных\Сортировки\sorts\sorts\sorts.cpp(31,51): message : выполняется компиляция ссылки на экземпляр шаблон функции "std::vector<int,std::allocator<int>> insertion_sort<int>(std::vector<int,std::allocator<int>>)"
+  sorts.vcxproj -> C:\Users\1\Desktop\Бомонка\VK Education\Алгоритмы и структуры данных\Сортировки\sorts\x64\Debug\sorts.exe

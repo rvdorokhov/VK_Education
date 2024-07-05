@@ -57,17 +57,4 @@ vector <type> merge_sort(vector <type> mass) { // функция, которая
 
 int main()
 {
-
-    int n; cin >> n;
-    vector <int> mass(n);
-    for (int i = 0; i < n; ++i) {
-        cin >> mass[i];
-    }
-
-    vector <int> mass1 = merge_sort(mass);
-
-    for (int i = 0; i < mass1.size(); ++i) {
-        cout << mass1[i] << " ";
-    }
-
 }

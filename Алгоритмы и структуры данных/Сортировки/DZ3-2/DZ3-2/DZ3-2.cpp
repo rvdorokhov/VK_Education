@@ -44,37 +44,39 @@ int main()
         memory = ""; // обнуляем поле
         cin >> str;
 
-        memory_book.ISMN_number = std::stoull(str);
+        memory_book.ISMN_number = std::stoull(str); // считываем ISMN-номер
 
-        while (str[str.size() - 1] != '\"') {
+        while (str[str.size() - 1] != '\"') { // считываем название книги
             cin >> str;
             memory += str + " ";
         }
         memory_book.name = memory.substr(0, memory.size() - 1);
 
-        cin >> str;
+        cin >> str; // считываем год книги
         memory_book.year = std::stoi(str);
 
         // записываем элемент в память
 
         current = first;
         bool is_inserted = false;
-        if ((current == nullptr)) {
+        if (current == nullptr) { // если список пустой - добавляем первое гнездо
             insert_nest(memory_book, current);
             is_inserted = true;
-        }else if (current->year > memory_book.year) {
+        }else if (current->year > memory_book.year) { // если год первого гнезда больше, то создаем новое гнездо перед первым
             insert_nest(memory_book, current);
             is_inserted = true;
         }
 
         while (!is_inserted) {
-            if (current->year == memory_book.year) {
+            if (current->year == memory_book.year) { // если год текущего гнезда равен году считанной книги, то заносим книгу в массив
                 current->books.push_back(memory_book);
                 is_inserted = true;
             }
             else if (current->year < memory_book.year) { // ((current->next = nullptr) || (current->next->year > memory_book.year))
-                if (current->next == nullptr) {
-                    insert_nest(memory_book, current);
+                                                         // если год текущего гнезда меньше года считанной книги и год следующего гнезда
+                                                         // больше года считанной книги или следующего гнезда нет (т.е. текущее гнездо - последнее в списке)
+                if (current->next == nullptr) {          
+                    insert_nest(memory_book, current); 
                     is_inserted = true;
                 }
                 else if (current->next->year > memory_book.year) {
@@ -88,33 +90,15 @@ int main()
 
     // сортировка элементов в каждом гнезде
     
-    current = first;
-    while (current->next != nullptr) {
-        for (int i = 0; i < current->books.size(); ++i) {
-            cout << current->books[i].name << " ";
-        }
-        cout << endl;
-        current = current->next;
-    }
-    cout << current->books[current->books.size() - 1].name << endl;
-    
-    
-    
-    
-    //for (unsigned int i = 0; i < n; ++i) {
-    //    cin >> str;
-
-    //    mass_books[i].ISMN_number = std::stoi(str);
-    //    
-    //    while (str[str.size() - 1] != '\"') {
-    //        cin >> str;
-    //        memory += str + " ";
+    //current = first; // отладочный вывод всех элементов всех гнехж
+    //while (current->next != nullptr) {
+    //    for (int i = 0; i < current->books.size(); ++i) {
+    //        cout << current->books[i].name << " ";
     //    }
-    //    mass_books[i].name = memory.substr(0, memory.size() - 1);
-
-    //    cin >> str;
-    //    mass_books[i].year = std::stoi(str);
+    //    cout << endl;
+    //    current = current->next;
     //}
+    //cout << current->books[current->books.size() - 1].name << endl;
 }
 
 void insert_nest(book inserting_book, shared_ptr<book_nest> insert_where) {
@@ -126,8 +110,14 @@ void insert_nest(book inserting_book, shared_ptr<book_nest> insert_where) {
         ::first = pointer;
     }
     else if (insert_where == first) { // если необходимо вставить гнездо в начало списка
-        pointer->next = ::first;
-        ::first = pointer;
+        if (insert_where->year > pointer->year) { // если необходимо вставить перед первым элементом 
+            pointer->next = ::first;
+            ::first = pointer;
+        }
+        else { // если необходимо вставить после первого элемента (insert->where->year <= pointer->year
+            pointer->next = insert_where->next;
+            insert_where->next = pointer;
+        }
     }
     else if (insert_where->next == nullptr) { // если необходимо вставить гнездо в конец списка
         insert_where->next = pointer;

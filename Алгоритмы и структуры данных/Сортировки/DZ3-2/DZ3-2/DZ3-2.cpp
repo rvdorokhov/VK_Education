@@ -1,5 +1,7 @@
-﻿// DZ3-2.cpp : Этот файл содержит функцию "main". Здесь начинается и заканчивается выполнение программы.
-//
+﻿// Представьте, что у вас есть электронная библиотека, содержащая информацию о книгах. Каждая книга имеет уникальный номер ISBN, название и год издания.
+//Вам нужно написать программу, которая сортирует все книги по году издания в порядке возрастания.Если две или более книг были изданы в один и тот же год, 
+//сортируйте их по названию в алфавитном порядке.Используйте сортировку слиянием для решения этой задачи.
+
 
 #define _CRT_SECURE_NO_WARNINGS
 
@@ -23,6 +25,9 @@ struct book_nest {
 };
 
 void insert_nest(book inserting_book, shared_ptr<book_nest> insert_where);
+
+vector <book> merge_sort(vector <book> mass); // реализация (была сделана пара изменений) взята из другой задачи, оригинал хранится в папке sorts
+
 
 
 // область объявления глоабльных перменных
@@ -89,16 +94,26 @@ int main()
     }
 
     // сортировка элементов в каждом гнезде
+
+    current = first; 
+    while (current->next != nullptr) {
+        current->books = merge_sort(current->books);
+        current = current->next;
+    }
+    current->books = merge_sort(current->books);
+
+    // вывод в нужном формате
     
-    //current = first; // отладочный вывод всех элементов всех гнехж
-    //while (current->next != nullptr) {
-    //    for (int i = 0; i < current->books.size(); ++i) {
-    //        cout << current->books[i].name << " ";
-    //    }
-    //    cout << endl;
-    //    current = current->next;
-    //}
-    //cout << current->books[current->books.size() - 1].name << endl;
+    current = first;
+    while (current->next != nullptr) {
+        for (int i = 0; i < current->books.size(); ++i) {
+            cout << current->books[i].ISMN_number << " " << current->books[i].name << " " << current->books[i].year << endl;
+        }
+        current = current->next;
+    }
+    for (int i = 0; i < current->books.size(); ++i) {
+        cout << current->books[i].ISMN_number << " " << current->books[i].name << " " << current->books[i].year << endl;
+    }
 }
 
 void insert_nest(book inserting_book, shared_ptr<book_nest> insert_where) {
@@ -126,5 +141,37 @@ void insert_nest(book inserting_book, shared_ptr<book_nest> insert_where) {
     else { // если необходимо вставить гнездо посередине списка
         pointer->next = insert_where->next;
         insert_where->next = pointer;
+    }
+}
+
+vector <book> join_massives(vector <book> mass1, vector <book> mass2) { // функция, которая объединяет два отсортированных массива в один отсортированный
+    vector <book> result_mass(mass1.size() + mass2.size()); unsigned int i = 0, index1 = 0, index2 = 0;
+
+    while ((mass1.size() > index1) && (mass2.size() > index2)) { // Цикл работает пока один из индексов не вылезет за пределы массива
+        if (mass1[index1].name < mass2[index2].name) { result_mass[i] = mass1[index1]; index1++; }
+        else { result_mass[i] = mass2[index2]; index2++; }
+        ++i;
+    }
+    // Дозаполняем массив
+    while (mass1.size() > index1) { result_mass[i] = mass1[index1]; index1++; ++i; }   // Если в результате работы предыдущего цикла index2 вылез за пределы, то этот цикл дозаполняет массив элементами из первого массива
+    while (mass2.size() > index2) { result_mass[i] = mass2[index2]; index2++; ++i; }   // Если в результате работы предыдущего цикла index1 вылез за пределы, то этот цикл дозаполняет массив элементами из второго массива
+
+    return result_mass;
+}
+
+vector <book> merge_sort(vector <book> mass) { // функция, которая возвращает отсортированный динамический массив. Восходящая реализация
+    unsigned int mass_length = mass.size(); unsigned int middle = mass_length / 2;
+    vector <book> result_mass(mass); vector <book> mass1; vector <book> mass2;
+
+    if (mass_length == 1) {
+        return mass;
+    }
+    else {
+        for (unsigned int i = 0; i < middle; ++i) { mass1.push_back(mass[i]); } // формируем один массив из элементов первой половины
+        for (unsigned int i = middle; i < mass_length; ++i) { mass2.push_back(mass[i]); } // формируем второй массив из элементов второй половины
+        mass1 = merge_sort(mass1);
+        mass2 = merge_sort(mass2);
+        result_mass = join_massives(mass1, mass2);
+        return result_mass;
     }
 }

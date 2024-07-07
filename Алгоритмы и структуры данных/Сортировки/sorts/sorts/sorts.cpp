@@ -1,5 +1,6 @@
 ﻿#include <iostream>
 #include <vector>
+#include <string>
 using namespace std;
 
 template<typename type>
@@ -46,15 +47,13 @@ vector <type> merge_sort(vector <type> mass) { // функция, которая
     else {
         for (unsigned int i = 0; i < middle; ++i) { mass1.push_back(mass[i]); } // формируем один массив из элементов первой половины
         for (unsigned int i = middle; i < mass_length; ++i) { mass2.push_back(mass[i]); } // формируем второй массив из элементов второй половины
-        mass1 = merge_sort(mass1); 
+        mass1 = merge_sort(mass1);
         mass2 = merge_sort(mass2);
         result_mass = join_massives(mass1, mass2);
         return result_mass;
     }
 }
 
+int main() {
 
-
-int main()
-{
 }

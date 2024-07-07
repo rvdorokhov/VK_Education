@@ -1,4 +1,4 @@
-﻿  sorts.cpp
-C:\Users\1\Desktop\Бомонка\VK Education\Алгоритмы и структуры данных\Сортировки\sorts\sorts\sorts.cpp(39,46): warning C4267: инициализация: преобразование из "size_t" в "unsigned int"; возможна потеря данных
-C:\Users\1\Desktop\Бомонка\VK Education\Алгоритмы и структуры данных\Сортировки\sorts\sorts\sorts.cpp(67,41): message : выполняется компиляция ссылки на экземпляр шаблон функции "std::vector<int,std::allocator<int>> merge_sort<int>(std::vector<int,std::allocator<int>>)"
-  sorts.vcxproj -> C:\Users\1\Desktop\Бомонка\VK Education\Алгоритмы и структуры данных\Сортировки\sorts\x64\Debug\sorts.exe
+﻿  Source.cpp
+c1xx : fatal  error C1083: Не удается открыть файл источник: Source.cpp: No such file or directory,
+  sorts.cpp
+  Создание кода...

@@ -1,4 +1,0 @@
-﻿  DZ3-2.cpp
-C:\Users\1\Desktop\Бомонка\VK Education\Алгоритмы и структуры данных\Сортировки\DZ3-2\DZ3-2\DZ3-2.cpp(47,46): warning C4244: =: преобразование "unsigned __int64" в "unsigned int", возможна потеря данных
-C:\Users\1\Desktop\Бомонка\VK Education\Алгоритмы и структуры данных\Сортировки\DZ3-2\DZ3-2\DZ3-2.cpp(158,43): warning C4267: инициализация: преобразование из "size_t" в "unsigned int"; возможна потеря данных
-  DZ3-2.vcxproj -> C:\Users\1\Desktop\Бомонка\VK Education\Алгоритмы и структуры данных\Сортировки\DZ3-2\x64\Debug\DZ3-2.exe

@@ -1,0 +1,8 @@
+﻿  DZ6.cpp
+C:\Users\1\Desktop\BMSTU\VK Education\Алгоритмы и структуры данных\Модуль 2. Поиск\DZ6\DZ6\DZ6\DZ6.cpp(9,55): warning C4267: инициализация: преобразование из "size_t" в "int"; возможна потеря данных
+C:\Users\1\Desktop\BMSTU\VK Education\Алгоритмы и структуры данных\Модуль 2. Поиск\DZ6\DZ6\DZ6\DZ6.cpp(37,8): message : выполняется компиляция ссылки на экземпляр шаблон функции "bool bin_search<int>(type,std::vector<int,std::allocator<int>>)"
+          with
+          [
+              type=int
+          ]
+  DZ6.vcxproj -> C:\Users\1\Desktop\BMSTU\VK Education\Алгоритмы и структуры данных\Модуль 2. Поиск\DZ6\DZ6\x64\Debug\DZ6.exe

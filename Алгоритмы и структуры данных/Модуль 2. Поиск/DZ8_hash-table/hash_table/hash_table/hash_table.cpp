@@ -1,24 +1,29 @@
-﻿// Запуск программы: CTRL+F5 или меню "Отладка" > "Запуск без отладки"
-// Отладка программы: F5 или меню "Отладка" > "Запустить отладку"
-
-
+﻿// Задачи из вк:
+// 1) На вход функции подается две строки a и b
+//    Используя хеш таблицу, попытайтесь определить, является ли строка b анаграммой к строке a.
+// 2) Есть строка с многократным повторением разных букв. Надо понять какое максимальное количество повторений встречается в строке. 
+//    Используя хеш таблицу, записывайте пару буква - количество вхождений в строку.
+// Я не знаю, зачем в этих задачах хеш-таблицы. Киллер-фича хеш-таблиц - удаление, поиск и вставка за О(1) по ключу тут не то чтобы используются
+// Обе задачи можно решить обычной функцией, которая возвращает массив с количеством кадлой встречаемой буквой или с помощью словаря (карты, std::map)
 
 #include <iostream>
 #include <vector>
 #include <forward_list>
 
-const unsigned int size_of_table = 13;
-
 template<
     typename key_t, 
     typename value_t
 >
-class hast_table {
+class hash_table {
 public:
     using element_t = std::pair<key_t, value_t>;
     using bucket_t = std::forward_list<element_t>;
 
-    void insert_elem(element_t element) {
+    hash_table() : buckets(117) {} // конструктор без параметров - тогда хеш-таблица по умолчанию создается с размером 117 (число от балды)
+
+    hash_table(unsigned int size) : buckets(size) {} // конструктор с параметром - тогда хеш-таблица создается с размером size
+
+    void insert_elem(element_t element) { 
         if (number_of_elements() / buckets.size() >= 0.75) {
             rehash();
         }
@@ -28,7 +33,7 @@ public:
 
     void delete_elem(key_t key) {
         unsigned int index = hash(key);
-        buckets[index].remove_if([](element_t element) { return element.first == key; });
+        buckets[index].remove_if([key](element_t element) { return element.first == key; });
     }
 
     element_t search_elem(key_t key) {
@@ -36,9 +41,9 @@ public:
         unsigned int index = hash(key);
 
         for (auto iterator = buckets[index].begin(); iterator != buckets[index].end(); ++iterator) {
-            if (*iterator.first == key) {
-                result.first = *iterator.first;
-                result.second = *iterator.second;
+            if (iterator->first == key) {
+                result.first = iterator->first;
+                result.second = iterator->second;
             }
         }
 
@@ -58,30 +63,36 @@ private:
         return counter;
     }
 
-    void hash_1(std::string key) {
-        // Задание с вк - На вход функции подается две строки a и b
-        //                Используя хеш таблицу, попытайтесь определить, является ли строка b анаграммой к строке a.
-        // Идея хэш-функции - сумма кодов ascii char-букв строки, поделенная по модулю на size_of_table
-        unsigned int index;
-        for (unsigned int i = 0; i < key.size(); ++i) {
-            index += static_cast<unsigned int>(key[0]); // можно без static_cast, оно автоматически char как целочисденное значение считает
-        }
-
-        return index % size_of_table;
+    unsigned int hash(key_t key) {
+        unsigned int index = std::hash<key_t>()(key);
+        return index % buckets.size();
     }
 
-    void hash_2(std::string key) {
-        // Задание с вк - Есть строка с многократным повторением разных букв. 
-        //                Надо понять какое максимальное количество повторений встречается в строке.
-        //                Используя хеш таблицу, записывайте пару буква - количество вхождений в строку.
-        // Идея хэш-функции - код ascii char-буквы, поделенный по модулю на size_of_table
-        unsigned int index = static_cast<unsigned int>(key); // можно без static_cast, оно автоматически char как целочисденное значение считает
+    //unsigned int hash_1(std::string key) {
+    //    // Задание с вк - На вход функции подается две строки a и b
+    //    //                Используя хеш таблицу, попытайтесь определить, является ли строка b анаграммой к строке a.
+    //    // Идея хэш-функции - сумма кодов ascii char-букв строки, поделенная по модулю на size_of_table
+    //    unsigned int index = 0;
+    //    for (unsigned int i = 0; i < key.size(); ++i) {
+    //        index += static_cast<unsigned int>(key[0]); // можно без static_cast, оно автоматически char как целочисденное значение считает
+    //    }
 
-        return index;
-    }
+    //    return index % buckets.size();
+    //}
+
+    //unsigned int hash_2(std::string key) {
+    //    // не доделано
+    //    // Задание с вк - Есть строка с многократным повторением разных букв. 
+    //    //                Надо понять какое максимальное количество повторений встречается в строке.
+    //    //                Используя хеш таблицу, записывайте пару буква - количество вхождений в строку.
+    //    // Идея хэш-функции - код ascii char-буквы, поделенный по модулю на size_of_table
+    //    unsigned int index = static_cast<unsigned int>(key); // можно без static_cast, оно автоматически char как целочисденное значение считает
+
+    //    return index % buckets.size();
+    //}
 
     void rehash() {
-        std::vector<bucket_t> old_buckets (size_of_table);
+        std::vector<bucket_t> old_buckets (buckets.size());
         old_buckets = buckets;
         buckets.clear(); buckets.resize(old_buckets.size() * 3);
 
@@ -95,12 +106,15 @@ private:
 
 int main()
 {
-    std::string str = "abcde";
+    hash_table<std::string, unsigned int> table(10);
 
-    int i = static_cast<unsigned int>(str[0]);
+    std::string str1, str2;
+    std::cin >> str1 >> str2;
 
-    std::cout << i;
+    std::pair<std::string, int> pair = std::make_pair(str1, 1);
+    table.insert_elem(pair);
+    pair = std::make_pair(str2, 2);
+    table.insert_elem(pair);
+
+    std::cout << table.search_elem(str1).second << " " << table.search_elem(str2).second;
 }
-
-// Запуск программы: CTRL+F5 или меню "Отладка" > "Запуск без отладки"
-// Отладка программы: F5 или меню "Отладка" > "Запустить отладку"

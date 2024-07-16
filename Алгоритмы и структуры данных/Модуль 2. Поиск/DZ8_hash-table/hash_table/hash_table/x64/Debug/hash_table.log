@@ -1,2 +1,14 @@
 ﻿  hash_table.cpp
+C:\Users\1\Desktop\BMSTU\VK Education\Алгоритмы и структуры данных\Модуль 2. Поиск\DZ8_hash-table\hash_table\hash_table\hash_table.cpp(64,1): warning C4267: инициализация: преобразование из "size_t" в "unsigned int"; возможна потеря данных
+C:\Users\1\Desktop\BMSTU\VK Education\Алгоритмы и структуры данных\Модуль 2. Поиск\DZ8_hash-table\hash_table\hash_table\hash_table.cpp(63,1): message : во время компиляции функции-члена класс шаблон "unsigned int hash_table<std::string,unsigned int>::hash(key_t)"
+          with
+          [
+              key_t=std::string
+          ]
+C:\Users\1\Desktop\BMSTU\VK Education\Алгоритмы и структуры данных\Модуль 2. Поиск\DZ8_hash-table\hash_table\hash_table\hash_table.cpp(38,28): message : выполняется компиляция ссылки на экземпляр шаблон функции "unsigned int hash_table<std::string,unsigned int>::hash(key_t)"
+          with
+          [
+              key_t=std::string
+          ]
+C:\Users\1\Desktop\BMSTU\VK Education\Алгоритмы и структуры данных\Модуль 2. Поиск\DZ8_hash-table\hash_table\hash_table\hash_table.cpp(106,49): message : выполняется компиляция ссылки на экземпляр класс шаблон функции "hash_table<std::string,unsigned int>"
   hash_table.vcxproj -> C:\Users\1\Desktop\BMSTU\VK Education\Алгоритмы и структуры данных\Модуль 2. Поиск\DZ8_hash-table\hash_table\x64\Debug\hash_table.exe

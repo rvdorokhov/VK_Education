@@ -7,9 +7,9 @@
 #include <stack>
 
 
-class neograph {
+class Neograph {
 public:
-    neograph(int vertex = 1) {
+    Neograph(int vertex = 1) {
         gr.resize(vertex);
         visited.resize(gr.size());
         visited.assign(visited.size(), 0);
@@ -55,18 +55,6 @@ public:
         return visited;
     }
 
-    std::vector<int> get_components() { // поиск всех компонент связности
-        visited.assign(visited.size(), 0);
-        int comp = 1;
-        for (int i = 0; i < visited.size(); ++i) {
-            if (!visited[i]) {
-                dfs(i, comp);
-                comp++;
-            }
-        }
-        return visited;
-    }
-
     std::vector<int> get_cycle(int vertex) {
         visited.assign(visited.size(), 0);
         cycle.clear();
@@ -87,8 +75,22 @@ public:
         }
     }
 
+    std::vector<int> bipartite_parts() {
+        visited.assign(visited.size(), 0); 
+        bool flag = true;
+        for (int vertex = 0; (vertex < gr.size())&&(flag); ++vertex) {
+            if (!visited[vertex]) {
+                flag = dfs_bipartite(vertex, 1);
+            }
+        }
 
-private:
+        if (!flag) {
+            visited.assign(visited.size(), 0);
+        }
+        return visited;
+    }
+
+protected:
     std::vector<std::list<int>> gr; // содержит информацию о связях в вершинах
     std::vector<int> visited;       // используются в функциях и процедурах для хранения промежуточных и итоговых значений
     std::vector<int> cycle;
@@ -125,19 +127,72 @@ private:
 
         return flag;
     }
+
+    bool dfs_bipartite(int vertex, int colour) {
+        visited[vertex] = colour; bool flag = true;
+
+        for (auto neighbour : gr[vertex]) {
+            if (!visited[neighbour]) {
+                flag = dfs_bipartite(neighbour, 3 - colour); // если пометить цвета как 1 и 2, то 3 - 1 = 2 и 3 - 2 = 1, 
+                                                             // что очень удобно при передачи в рекурсивный вызов функции
+                if (!flag) { return false; }
+            }
+            else if (visited[neighbour] == colour) {
+                return false;
+            }
+        }
+
+        return flag;
+    }
+private:
+    std::vector<int> get_components() { // поиск всех компонент связности
+        visited.assign(visited.size(), 0);
+        int comp = 1;
+        for (int i = 0; i < visited.size(); ++i) {
+            if (!visited[i]) {
+                dfs(i, comp);
+                comp++;
+            }
+        }
+        return visited;
+    }
 };
 
+class Ograph : public Neograph {
+public:
+    Ograph(int vertex = 1) : Neograph(vertex) { }
+
+    void add_edge(int vertex1, int vertex2) {
+        while ((gr.size() < vertex1) || (gr.size() < vertex2)) { // граф автмоатически дозаполняется, если была передана вершина с номером большим, чем размер графа
+            add_vertex();
+        }
+        vertex1--; vertex2--;
+        gr[vertex1].push_back(vertex2);
+    }
+
+    void delete_edge(int vertex1, int vertex2) {
+        vertex1--; vertex2--;
+        gr[vertex1].remove(vertex2);
+    }
+
+    bool dfs_bipartite(int vertex, int colour) {
+        // тут надо сначала построить вспомогательный неограф, затем вызвать от него функцию определения двудольности родительского класса
+    }
+};
 
 int main()
 {
-    neograph graph(5);
+    Neograph graph;
 
-    //graph.add_edge(1, 2); graph.add_edge(3, 2); graph.add_edge(1, 3); graph.add_edge(4, 5);
-    //graph.add_edge(3, 2); graph.add_edge(1, 3); graph.add_edge(4, 5); graph.add_edge(3, 4); graph.add_edge(3, 5);
+    //graph.add_edge(1, 2); graph.add_edge(1, 3); graph.add_edge(4, 5);
+    //graph.add_edge(5, 1); graph.add_edge(4, 3); graph.add_edge(3, 2);
+
+    //graph.add_edge(1, 2); graph.add_edge(2, 3); graph.add_edge(3, 4); graph.add_edge(4, 1);
+
 
     graph.print_edges();
 
-    std::vector<int> result = graph.get_cycle();
+    std::vector<int> result = graph.bipartite_parts();
 
     for (int elem : result) {
         std::cout << elem << " ";

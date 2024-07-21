@@ -57,22 +57,23 @@ public:
 
     std::vector<int> get_cycle(int vertex) {
         visited.assign(visited.size(), 0);
-        cycle.clear();
+        memory.clear();
         dfs_cycle_search(vertex - 1, vertex - 1, -1);
-        for (int i = 0; i < cycle.size(); ++i) { cycle[i]++; }
-        return cycle;
+        for (int i = 0; i < memory.size(); ++i) { memory[i]++; }
+        return memory;
     }
 
     std::vector<int> get_cycle() {
         for (int vertex = 1; vertex < gr.size(); ++vertex) {
             visited.assign(visited.size(), 0);
-            cycle.clear();
+            memory.clear();
             dfs_cycle_search(vertex - 1, vertex - 1, -1);
-            if (!cycle.empty()) { 
-                for (int i = 0; i < cycle.size(); ++i) { cycle[i]++; }
-                return cycle; 
+            if (!memory.empty()) { 
+                for (int i = 0; i < memory.size(); ++i) { memory[i]++; }
+                return memory; 
             }
         }
+        return memory;
     }
 
     std::vector<int> bipartite_parts() {
@@ -93,7 +94,7 @@ public:
 protected:
     std::vector<std::list<int>> gr; // содержит информацию о связях в вершинах
     std::vector<int> visited;       // используются в функциях и процедурах для хранения промежуточных и итоговых значений
-    std::vector<int> cycle;
+    std::vector<int> memory;
 
     void dfs(int vertex, int component = 1) { // поиск в глубину (в таблице visited помечает как component все достижимые вершины, 
                                               // другими словами - находит компоненту связности текущей веришны
@@ -110,7 +111,7 @@ protected:
         bool flag = false;
         visited[vertex] = 1; // 1 - "вершина была посещена в текущем рекурсивном обходе"
                              // 2 - "вершина была посещена ранее"
-        cycle.push_back(vertex);
+        memory.push_back(vertex);
 
         for (auto neighbour : gr[vertex]) {
             if (!visited[neighbour]) {
@@ -122,7 +123,7 @@ protected:
             }
         }
 
-        cycle.pop_back();
+        memory.pop_back();
         visited[vertex] = 2;
 
         return flag;
@@ -178,21 +179,57 @@ public:
     bool dfs_bipartite(int vertex, int colour) {
         // тут надо сначала построить вспомогательный неограф, затем вызвать от него функцию определения двудольности родительского класса
     }
+
+    std::vector<int> get_topologic() {
+        visited.assign(visited.size(), 0);
+        memory.clear();
+        if (!get_cycle().empty()) {
+            return {};
+        }
+        visited.assign(visited.size(), 0);
+        memory.clear();
+
+        for (int i = 0; i < visited.size(); ++i) { // запускаем dfs от каждой непосещенной вершины (на случай если граф несвязный)
+            if (!visited[i]) {
+                dfs_topologic(i);
+            }
+        }
+
+        for (int& elem : memory) {
+            elem++;
+        }
+
+        std::reverse(memory.begin(), memory.end());
+        return memory;
+    }
+private:
+    void dfs_topologic(int vertex) { // поиск в глубину (в таблице visited помечает как component все достижимые вершины, 
+        // другими словами - находит компоненту связности текущей веришны
+        visited[vertex] = 1;
+
+        for (auto neighbour : gr[vertex]) {
+            if (!visited[neighbour]) {
+                dfs_topologic(neighbour);
+            }
+        }
+
+        memory.push_back(vertex);
+    }
 };
 
 int main()
 {
-    Neograph graph;
+    Ograph graph;
 
     //graph.add_edge(1, 2); graph.add_edge(1, 3); graph.add_edge(4, 5);
     //graph.add_edge(5, 1); graph.add_edge(4, 3); graph.add_edge(3, 2);
 
-    //graph.add_edge(1, 2); graph.add_edge(2, 3); graph.add_edge(3, 4); graph.add_edge(4, 1);
+    graph.add_edge(2, 1); graph.add_edge(1, 3); graph.add_edge(3, 4); graph.add_edge(1, 4); graph.add_edge(3, 5); graph.add_edge(4, 5); graph.add_vertex();
 
 
     graph.print_edges();
 
-    std::vector<int> result = graph.bipartite_parts();
+    std::vector<int> result = graph.get_topologic();
 
     for (int elem : result) {
         std::cout << elem << " ";

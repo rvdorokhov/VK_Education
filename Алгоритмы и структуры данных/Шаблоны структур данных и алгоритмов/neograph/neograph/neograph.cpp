@@ -55,6 +55,18 @@ public:
         return visited;
     }
 
+    std::vector<int> get_components() { // поиск всех компонент связности
+        visited.assign(visited.size(), 0);
+        int comp = 1;
+        for (int i = 0; i < visited.size(); ++i) {
+            if (!visited[i]) {
+                dfs(i, comp);
+                comp++;
+            }
+        }
+        return visited;
+    }
+
     std::vector<int> get_cycle(int vertex) {
         visited.assign(visited.size(), 0);
         memory.clear();
@@ -97,7 +109,7 @@ protected:
     std::vector<int> memory;
 
     void dfs(int vertex, int component = 1) { // поиск в глубину (в таблице visited помечает как component все достижимые вершины, 
-                                              // другими словами - находит компоненту связности текущей веришны
+                                              // другими словами - находит компоненту связности текущей веришны)
         visited[vertex] = component;
 
         for (auto neighbour : gr[vertex]) {
@@ -105,6 +117,7 @@ protected:
                 dfs(neighbour, component);
             }
         }
+
     }
 
     bool dfs_cycle_search(int start_vertex, int vertex, int parent = -1) { // поиск и восстановление цикла в графе
@@ -145,18 +158,6 @@ protected:
 
         return flag;
     }
-private:
-    std::vector<int> get_components() { // поиск всех компонент связности
-        visited.assign(visited.size(), 0);
-        int comp = 1;
-        for (int i = 0; i < visited.size(); ++i) {
-            if (!visited[i]) {
-                dfs(i, comp);
-                comp++;
-            }
-        }
-        return visited;
-    }
 };
 
 class Ograph : public Neograph {
@@ -180,16 +181,8 @@ public:
         // тут надо сначала построить вспомогательный неограф, затем вызвать от него функцию определения двудольности родительского класса
     }
 
-    std::vector<int> get_topologic() {
-        visited.assign(visited.size(), 0);
-        memory.clear();
-        if (!get_cycle().empty()) {
-            return {};
-        }
-        visited.assign(visited.size(), 0);
-        memory.clear();
-
-        for (int i = 0; i < visited.size(); ++i) { // запускаем dfs от каждой непосещенной вершины (на случай если граф несвязный)
+    std::vector<int> get_topologic() { // топлогическая сортировка определена только на гарфах без циклов, однако описанный алгоритм это не учитывает
+        for (int i = 0; i < visited.size(); ++i) { // запускаем топлогическую сортировку от каждой непосещенной вершины (на случай если граф несвязный)
             if (!visited[i]) {
                 dfs_topologic(i);
             }
@@ -201,6 +194,27 @@ public:
 
         std::reverse(memory.begin(), memory.end());
         return memory;
+    }
+
+    std::vector<int> get_components() { // Алгоритм Косараджу-Шарира
+        Ograph inverted_gr(gr.size()); // вспомогательный инверитрованный граф
+        for (int i = 0; i < gr.size(); ++i) { // заполняем вспомогательный инверитрованный граф
+            for (int elem : gr[i]) {
+                inverted_gr.add_edge(elem + 1, i + 1);
+            }
+        }
+        memory = inverted_gr.get_topologic();   // запускаем "топлогическую" сортировку от каждой непосещенной вершины (на случай если граф несвязный)
+        for (int& elem : memory) { --elem; }    // в результате работы цикла имеет в memory "топологически" отсортированный массив
+                                                // топлогический условно, потому что топологическая сортировка определена только на графах без циклов
+        int colour = 1;
+        for (int i = 0; i < gr.size(); ++i) {
+            if (!visited[memory[i]]) {
+                dfs(memory[i], colour);
+                ++colour;
+            }
+        }
+
+        return visited;
     }
 private:
     void dfs_topologic(int vertex) { // поиск в глубину (в таблице visited помечает как component все достижимые вершины, 
@@ -224,12 +238,19 @@ int main()
     //graph.add_edge(1, 2); graph.add_edge(1, 3); graph.add_edge(4, 5);
     //graph.add_edge(5, 1); graph.add_edge(4, 3); graph.add_edge(3, 2);
 
-    graph.add_edge(2, 1); graph.add_edge(1, 3); graph.add_edge(3, 4); graph.add_edge(1, 4); graph.add_edge(3, 5); graph.add_edge(4, 5); graph.add_vertex();
+    // graph.add_edge(2, 1); graph.add_edge(1, 3); graph.add_edge(3, 4); graph.add_edge(1, 4); graph.add_edge(3, 5); graph.add_edge(4, 5); graph.add_vertex();
 
+    graph.add_edge(1, 8); graph.add_edge(8, 7); graph.add_edge(7, 2); graph.add_edge(8, 2); graph.add_edge(7, 1);
+    graph.add_edge(2, 10); graph.add_edge(7, 5);
+    graph.add_edge(12, 10); graph.add_edge(12, 3); graph.add_edge(3, 10); graph.add_edge(10, 5); graph.add_edge(5, 3);
+    graph.add_edge(3, 11); graph.add_edge(12, 6);
+    graph.add_edge(6, 11); graph.add_edge(6, 4); graph.add_edge(9, 6); graph.add_edge(4, 9); graph.add_edge(11, 9);
 
     graph.print_edges();
 
-    std::vector<int> result = graph.get_topologic();
+    for (int i = 0; i < 12; ++i) { std::cout << i << " "; }
+    std::cout << "\n";
+    std::vector<int> result = graph.get_components();
 
     for (int elem : result) {
         std::cout << elem << " ";

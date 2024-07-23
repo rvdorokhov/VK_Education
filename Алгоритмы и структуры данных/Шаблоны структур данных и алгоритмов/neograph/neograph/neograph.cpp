@@ -177,8 +177,16 @@ public:
         gr[vertex1].remove(vertex2);
     }
 
-    bool dfs_bipartite(int vertex, int colour) {
+    std::vector<int> dfs_bipartite(int vertex, int colour) {
         // тут надо сначала построить вспомогательный неограф, затем вызвать от него функцию определения двудольности родительского класса
+        Neograph neogr(gr.size()); // вспомогательный неориентированный граф
+        for (int i = 0; i < gr.size(); ++i) { // заполняем вспомогательный неориентированный граф
+            for (int elem : gr[i]) {
+                neogr.add_edge(i + 1, elem + 1);
+            }
+        }
+
+        return neogr.bipartite_parts();
     }
 
     std::vector<int> get_topologic() { // топлогическая сортировка определена только на гарфах без циклов, однако описанный алгоритм это не учитывает
@@ -235,27 +243,12 @@ int main()
 {
     Ograph graph;
 
-    //graph.add_edge(1, 2); graph.add_edge(1, 3); graph.add_edge(4, 5);
-    //graph.add_edge(5, 1); graph.add_edge(4, 3); graph.add_edge(3, 2);
+    graph.add_edge(1, 2); graph.add_edge(1, 3); graph.add_edge(4, 3);
+    graph.add_edge(5, 2);
 
-    // graph.add_edge(2, 1); graph.add_edge(1, 3); graph.add_edge(3, 4); graph.add_edge(1, 4); graph.add_edge(3, 5); graph.add_edge(4, 5); graph.add_vertex();
-
-    graph.add_edge(1, 8); graph.add_edge(8, 7); graph.add_edge(7, 2); graph.add_edge(8, 2); graph.add_edge(7, 1);
-    graph.add_edge(2, 10); graph.add_edge(7, 5);
-    graph.add_edge(12, 10); graph.add_edge(12, 3); graph.add_edge(3, 10); graph.add_edge(10, 5); graph.add_edge(5, 3);
-    graph.add_edge(3, 11); graph.add_edge(12, 6);
-    graph.add_edge(6, 11); graph.add_edge(6, 4); graph.add_edge(9, 6); graph.add_edge(4, 9); graph.add_edge(11, 9);
-
-    graph.print_edges();
-
-    for (int i = 0; i < 12; ++i) { std::cout << i << " "; }
-    std::cout << "\n";
-    std::vector<int> result = graph.get_components();
+    std::vector<int> result = graph.bipartite_parts();
 
     for (int elem : result) {
         std::cout << elem << " ";
     }
 }
-
-// Запуск программы: CTRL+F5 или меню "Отладка" > "Запуск без отладки"
-// Отладка программы: F5 или меню "Отладка" > "Запустить отладку"

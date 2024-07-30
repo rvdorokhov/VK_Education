@@ -1,10 +1,8 @@
-﻿// neograph.cpp : Этот файл содержит функцию "main". Здесь начинается и заканчивается выполнение программы.
-//
-
-#include <iostream>
+﻿#include <iostream>
 #include <vector>
 #include <list>
 #include <stack>
+#include <queue>
 
 
 class Neograph {
@@ -103,7 +101,24 @@ public:
         return visited;
     }
 
+    std::vector<int> get_bfs() {
+        visited.assign(visited.size(), INF);
+        for (int vertex = 0; vertex < visited.size(); ++vertex) {
+            if (visited[vertex] == INF) {
+                bfs(vertex);
+            }
+        }
+        return visited;
+    }
+
+    std::vector<int> get_bfs(int vertex) {
+        visited.assign(visited.size(), INF);
+        bfs(vertex);
+        return visited;
+    }
+
 protected:
+    const int INF = 10e9;           // константа условной бесконечности
     std::vector<std::list<int>> gr; // содержит информацию о связях в вершинах
     std::vector<int> visited;       // используются в функциях и процедурах для хранения промежуточных и итоговых значений
     std::vector<int> memory;
@@ -157,6 +172,24 @@ protected:
         }
 
         return flag;
+    }
+
+    void bfs(int start_vertex) {
+        std::queue<int> q; int cur_vertex;
+
+        q.push(start_vertex);
+        visited[start_vertex] = 0;
+
+        while (!q.empty()) {
+            cur_vertex = q.front();
+            q.pop();
+            for (int vertex : gr[cur_vertex]) {
+                if (visited[vertex] > visited[cur_vertex] + 1) {
+                    visited[vertex] = visited[cur_vertex] + 1;
+                    q.push(vertex);
+                }
+            }
+        }
     }
 };
 
@@ -241,12 +274,17 @@ private:
 
 int main()
 {
-    Ograph graph;
+    Neograph graph;
 
-    graph.add_edge(1, 2); graph.add_edge(1, 3); graph.add_edge(4, 3);
-    graph.add_edge(5, 2);
+    graph.add_edge(1, 2); graph.add_edge(1, 4);
+    graph.add_edge(2, 9); 
+    graph.add_edge(9, 3); graph.add_edge(9, 6);
+    graph.add_edge(6, 7); graph.add_edge(7, 3);
+    graph.add_edge(3, 4); graph.add_edge(3, 5); graph.add_edge(3, 10);
+    graph.add_edge(4, 8); graph.add_edge(4, 10);
+    graph.add_edge(8, 10);
 
-    std::vector<int> result = graph.bipartite_parts();
+    std::vector<int> result = graph.get_bfs();
 
     for (int elem : result) {
         std::cout << elem << " ";

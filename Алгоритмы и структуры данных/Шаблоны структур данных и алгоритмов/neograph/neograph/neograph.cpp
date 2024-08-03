@@ -158,8 +158,8 @@ protected:
             cur_vertex = q.front();
             q.pop();
             for (std::pair<int, int> vertex : gr[cur_vertex]) {
-                if (visited[vertex.first] > visited[cur_vertex] + 1) {
-                    visited[vertex.first] = visited[cur_vertex] + 1;
+                if (visited[vertex.first] > visited[cur_vertex] + vertex.second) {
+                    visited[vertex.first] = visited[cur_vertex] + vertex.second;
                     q.push(vertex.first);
                 }
             }
@@ -265,7 +265,7 @@ private:
 
 int main()
 {
-    Ograph graph;
+    Neograph graph;
 
     graph.add_edge(1, 2); graph.add_edge(1, 4);
     graph.add_edge(2, 9); 
@@ -275,8 +275,7 @@ int main()
     graph.add_edge(4, 8); graph.add_edge(4, 10);
     graph.add_edge(8, 10);
 
-    std::vector<int> result = graph.get_topologic();
-    result = graph.get_components();
+    std::vector<int> result = graph.get_bfs();
 
 
     for (int elem : result) {

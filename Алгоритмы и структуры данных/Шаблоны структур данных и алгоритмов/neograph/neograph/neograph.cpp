@@ -13,7 +13,7 @@ public:
     }
 
     void add_edge(int vertex1, int vertex2, int weight = 1) {
-        while ((gr.size() < vertex1) || (gr.size() < vertex2)) { // граф автмоатически дозаполняется, если была передана вершина с номером большим, чем размер графа
+        while ((gr.size() < vertex1) || (gr.size() < vertex2)) { // граф автоматически дозаполняется, если была передана вершина с номером большим, чем размер графа
             add_vertex();
         }
         vertex1--; vertex2--;
@@ -102,15 +102,76 @@ public:
 
     std::vector<int> get_bfs(int vertex = 1) {
         visited.assign(visited.size(), INF);
+        memory.assign(visited.size(), 0);
         bfs(vertex - 1);
         return visited;
+    }
+
+    std::vector<int> get_shortest_path(int end_vertex, int start_vertex = 1) {
+        --start_vertex; --end_vertex;
+        visited.assign(visited.size(), INF);
+        memory.assign(visited.size(), -1);      // в memory для каждой вершины будем хранить номер предыдущей вершины кратчайшего пути
+        bfs(start_vertex);
+        visited.clear(); // нас интересует кратчайший путь и массив memory
+                         // для экономии памяти я не буду инициализировать дополнительный массив-результат, в качестве результата будет возвращен visited
+
+        int vertex = end_vertex;
+        while (vertex != start_vertex) {  // восстановление пути
+            visited.push_back(vertex + 1);
+            vertex = memory[vertex];
+        }
+        visited.push_back(vertex + 1); // добавление первой вершины
+
+        std::reverse(visited.begin(), visited.end());
+        return visited;
+    }
+
+    std::vector<int> get_shortest_vertexes(int start_vertex, int end_vertex) { // нужный явный "исток" и явный "сток" (насколько это определимо в неографе)
+        std::vector<int> bfs_result_start(gr.size()); // тут будут храниться кратчайшие пути от стартовой вершины 
+        std::vector<int> bfs_result_end(gr.size()); // тут будут храниться кратчайшие пути от конечной вершины
+
+        bfs_result_start = get_bfs(start_vertex);
+        bfs_result_end = get_bfs(end_vertex);
+
+        --start_vertex; --end_vertex;
+        memory.clear(); // тут будет результат
+        for (int i = 0; i < gr.size(); ++i) {
+            if (bfs_result_start[i] + bfs_result_end[i] == bfs_result_start[end_vertex]) { // если сумма расстояний до каждой вершины равна кратчайшему пути
+                                                                                           // то вершина может быть в кратчайшем пути
+                memory.push_back(i + 1);
+            }
+        }
+
+        return memory;
+    }
+
+    std::vector<std::pair<int, int>> get_shortest_edges(int start_vertex, int end_vertex) { // нужный явный "исток" и явный "сток" (насколько это определимо в неографе)
+        std::vector<std::pair<int, int>> result;
+        std::vector<int> bfs_result_start(gr.size()); // тут будут храниться кратчайшие пути от стартовой вершины 
+        std::vector<int> bfs_result_end(gr.size()); // тут будут храниться кратчайшие пути от конечной вершины
+
+        bfs_result_start = get_bfs(start_vertex);
+        bfs_result_end = get_bfs(end_vertex);
+        --start_vertex; --end_vertex;
+
+        memory.clear(); // тут будет результат
+        for (int vertex = 0; vertex < gr.size(); ++vertex) {
+            for (std::pair<int ,int> neighbour : gr[vertex]) {
+                if ((bfs_result_start[vertex] + bfs_result_end[neighbour.first] + neighbour.second == bfs_result_start[end_vertex])) {
+                    result.push_back(std::make_pair(vertex, neighbour.first));
+                }
+            }
+        }
+
+        return result;
     }
 
 protected:
     const int INF = 10e9;           // константа условной бесконечности
     std::vector<std::list<
         std::pair<int, int>>        // <номер вершины, вес ведущего в него ребра>
-        > gr;                       // содержит информацию о связях в вершинах
+        > gr;          // gr содержит информацию о связях в вершинах
+                                    // inverted_gr - вспомогательный инвертированный граф, используемый в некоторых алгоритмах
     std::vector<int> visited;       // используются в функциях и процедурах для хранения промежуточных и итоговых значений
     std::vector<int> memory;
 
@@ -160,11 +221,13 @@ protected:
             for (std::pair<int, int> vertex : gr[cur_vertex]) {
                 if (visited[vertex.first] > visited[cur_vertex] + vertex.second) {
                     visited[vertex.first] = visited[cur_vertex] + vertex.second;
+                    memory[vertex.first] = cur_vertex;
                     q.push(vertex.first);
                 }
             }
         }
     }
+
 private:
     bool dfs_bipartite(int vertex, int colour) {
         visited[vertex] = colour; bool flag = true;
@@ -213,8 +276,8 @@ public:
         return neogr.bipartite_parts();
     }
 
-    std::vector<int> get_topologic() { // топлогическая сортировка определена только на гарфах без циклов, однако описанный алгоритм это не учитывает
-        for (int i = 0; i < visited.size(); ++i) { // запускаем топлогическую сортировку от каждой непосещенной вершины (на случай если граф несвязный)
+    std::vector<int> get_topologic() { // топлогическая сортировка определена только на графах без циклов, однако описанный алгоритм это не учитывает
+        for (int i = 0; i < visited.size(); ++i) { // запускаем топологическую сортировку от каждой непосещенной вершины (на случай если граф несвязный)
             if (!visited[i]) {
                 dfs_topologic(i);
             }
@@ -230,7 +293,7 @@ public:
 
     std::vector<int> get_components() { // Алгоритм Косараджу-Шарира
         Ograph inverted_gr(gr.size()); // вспомогательный инверитрованный граф
-        for (int i = 0; i < gr.size(); ++i) { // заполняем вспомогательный неориентированный граф
+        for (int i = 0; i < gr.size(); ++i) { // заполняем вспомогательный неориентированный инвертированный граф
             for (std::pair<int, int> edge : gr[i]) {
                 inverted_gr.add_edge(i + 1, edge.first + 1);
             }
@@ -267,18 +330,23 @@ int main()
 {
     Neograph graph;
 
-    graph.add_edge(1, 2); graph.add_edge(1, 4);
-    graph.add_edge(2, 9); 
-    graph.add_edge(9, 3); graph.add_edge(9, 6);
-    graph.add_edge(6, 7); graph.add_edge(7, 3);
-    graph.add_edge(3, 4); graph.add_edge(3, 5); graph.add_edge(3, 10);
-    graph.add_edge(4, 8); graph.add_edge(4, 10);
-    graph.add_edge(8, 10);
+    graph.add_edge(1, 2); graph.add_edge(1, 6); graph.add_edge(1, 10);
+    graph.add_edge(2, 3);
+    graph.add_edge(3, 4);
+    graph.add_edge(6, 7); graph.add_edge(6, 8);
+    graph.add_edge(10, 11);
+    graph.add_edge(11, 8);
+    graph.add_edge(4, 7); graph.add_edge(4, 5);
+    graph.add_edge(7, 9);
+    graph.add_edge(8, 9); graph.add_edge(8, 12);
+    graph.add_edge(5, 13);
+    graph.add_edge(9, 13);
+    graph.add_edge(12, 13);
 
-    std::vector<int> result = graph.get_bfs();
+    std::vector<std::pair<int, int>> result = graph.get_shortest_edges(1, 13);
 
 
-    for (int elem : result) {
-        std::cout << elem << " ";
+    for (auto elem : result) {
+        std::cout << elem.first << " " << elem.second << std::endl;
     }
 }

@@ -64,7 +64,7 @@ public:
         return visited;
     }
 
-    std::vector<int> get_cycle(int vertex) {
+    std::vector<int> get_cycle(int vertex) { // поиск цикла от конкретной веришны
         visited.assign(visited.size(), 0);
         memory.clear();
         dfs_cycle_search(vertex - 1, vertex - 1, -1);
@@ -72,7 +72,7 @@ public:
         return memory;
     }
 
-    std::vector<int> get_cycle() {
+    std::vector<int> get_cycle() { // поиск цикла - любого (по сути проверка на наличие цикла в кграфе)
         for (int vertex = 1; vertex < gr.size(); ++vertex) {
             visited.assign(visited.size(), 0);
             memory.clear();
@@ -85,7 +85,7 @@ public:
         return memory;
     }
 
-    std::vector<int> bipartite_parts() {
+    std::vector<int> bipartite_parts() { // проверка на двудольность
         visited.assign(visited.size(), 0); 
         bool flag = true;
         for (int vertex = 0; (vertex < gr.size())&&(flag); ++vertex) {
@@ -100,14 +100,16 @@ public:
         return visited;
     }
 
-    std::vector<int> get_bfs(int vertex = 1) {
+    // ТОЛЬКО ДЛЯ НЕВЗВЕШЕННОГО ГРАФА
+    std::vector<int> get_bfs(int vertex = 1) { // классический поиск в ширину - кратчайших расстояний до каждой вершины из заданной на невзвешенном графе
         visited.assign(visited.size(), INF);
         memory.assign(visited.size(), 0);
         bfs(vertex - 1);
         return visited;
     }
 
-    std::vector<int> get_shortest_path(int end_vertex, int start_vertex = 1) {
+    // ТОЛЬКО ДЛЯ НЕВЗВЕШЕННОГО ГРАФА
+    std::vector<int> get_shortest_path(int start_vertex, int end_vertex) { // восстановление кратчайшего пути от вершины до вершины
         --start_vertex; --end_vertex;
         visited.assign(visited.size(), INF);
         memory.assign(visited.size(), -1);      // в memory для каждой вершины будем хранить номер предыдущей вершины кратчайшего пути
@@ -126,7 +128,9 @@ public:
         return visited;
     }
 
-    std::vector<int> get_shortest_vertexes(int start_vertex, int end_vertex) { // нужный явный "исток" и явный "сток" (насколько это определимо в неографе)
+    // ТОЛЬКО ДЛЯ НЕВЗВЕШЕННОГО ГРАФА
+    std::vector<int> get_shortest_vertexes(int start_vertex, int end_vertex) { // поиск ВСЕХ вершин, которые могут содержаться в кратчайшем пути
+                                                                               // нужны явный "исток" и явный "сток" (насколько это определимо в неографе)
         std::vector<int> bfs_result_start(gr.size()); // тут будут храниться кратчайшие пути от стартовой вершины 
         std::vector<int> bfs_result_end(gr.size()); // тут будут храниться кратчайшие пути от конечной вершины
 
@@ -145,7 +149,9 @@ public:
         return memory;
     }
 
-    std::vector<std::pair<int, int>> get_shortest_edges(int start_vertex, int end_vertex) { // нужный явный "исток" и явный "сток" (насколько это определимо в неографе)
+    // ТОЛЬКО ДЛЯ НЕВЗВЕШЕННОГО ГРАФА
+    std::vector<std::pair<int, int>> get_shortest_edges(int start_vertex, int end_vertex) { // поиск ВСЕХ ребер, которые могут содержаться в кратчайшем пути
+                                                                                            // нужны явный "исток" и явный "сток" (насколько это определимо в неографе)
         std::vector<std::pair<int, int>> result;
         std::vector<int> bfs_result_start(gr.size()); // тут будут храниться кратчайшие пути от стартовой вершины 
         std::vector<int> bfs_result_end(gr.size()); // тут будут храниться кратчайшие пути от конечной вершины
@@ -157,7 +163,7 @@ public:
         memory.clear(); // тут будет результат
         for (int vertex = 0; vertex < gr.size(); ++vertex) {
             for (std::pair<int ,int> neighbour : gr[vertex]) {
-                if ((bfs_result_start[vertex] + bfs_result_end[neighbour.first] + neighbour.second == bfs_result_start[end_vertex])) {
+                if ((bfs_result_start[vertex] + bfs_result_end[neighbour.first] + 1 == bfs_result_start[end_vertex])) {
                     result.push_back(std::make_pair(vertex, neighbour.first));
                 }
             }
@@ -209,7 +215,8 @@ protected:
         return flag;
     }
 
-    void bfs(int start_vertex) {
+    // ТОЛЬКО ДЛЯ НЕВЗВЕШЕННОГО ГРАФА 
+    void bfs(int start_vertex) { // поиск в ширину позволяющий восстанавливать кратчайший путь
         std::queue<int> q; int cur_vertex;
 
         q.push(start_vertex);
@@ -219,8 +226,8 @@ protected:
             cur_vertex = q.front();
             q.pop();
             for (std::pair<int, int> vertex : gr[cur_vertex]) {
-                if (visited[vertex.first] > visited[cur_vertex] + vertex.second) {
-                    visited[vertex.first] = visited[cur_vertex] + vertex.second;
+                if (visited[vertex.first] > visited[cur_vertex] + 1) {
+                    visited[vertex.first] = visited[cur_vertex] + 1;
                     memory[vertex.first] = cur_vertex;
                     q.push(vertex.first);
                 }
@@ -229,7 +236,7 @@ protected:
     }
 
 private:
-    bool dfs_bipartite(int vertex, int colour) {
+    bool dfs_bipartite(int vertex, int colour) { // модификация дфс для проверки на двудольность
         visited[vertex] = colour; bool flag = true;
 
         for (auto neighbour : gr[vertex]) {
@@ -252,7 +259,7 @@ public:
     Ograph(int vertex = 1) : Neograph(vertex) { }
 
     void add_edge(int vertex1, int vertex2, int weight = 1) {
-        while ((gr.size() < vertex1) || (gr.size() < vertex2)) { // граф автмоатически дозаполняется, если была передана вершина с номером большим, чем размер графа
+        while ((gr.size() < vertex1) || (gr.size() < vertex2)) { // граф автоматически дозаполняется, если была передана вершина с номером большим, чем размер графа
             add_vertex();
         }
         vertex1--; vertex2--;
@@ -264,7 +271,7 @@ public:
         gr[vertex1].remove_if([=](std::pair<int, int> edge) { return edge.first == vertex2; });
     }
 
-    std::vector<int> bipartite_parts() {
+    std::vector<int> bipartite_parts() { // проверка на двудольность
         // тут надо сначала построить вспомогательный неограф, затем вызвать от него функцию определения двудольности родительского класса
         Neograph neogr(gr.size()); // вспомогательный неориентированный граф
         for (int i = 0; i < gr.size(); ++i) { // заполняем вспомогательный неориентированный граф
@@ -291,13 +298,9 @@ public:
         return memory;
     }
 
-    std::vector<int> get_components() { // Алгоритм Косараджу-Шарира
-        Ograph inverted_gr(gr.size()); // вспомогательный инверитрованный граф
-        for (int i = 0; i < gr.size(); ++i) { // заполняем вспомогательный неориентированный инвертированный граф
-            for (std::pair<int, int> edge : gr[i]) {
-                inverted_gr.add_edge(i + 1, edge.first + 1);
-            }
-        }
+    std::vector<int> get_components() { // Алгоритм Косараджу-Шарира поиска компонент сильной связности ографа
+        Ograph inverted_gr = get_inverted_gr(); // вспомогательный инверитрованный граф
+
         memory = inverted_gr.get_topologic();   // запускаем "топлогическую" сортировку от каждой непосещенной вершины (на случай если граф несвязный)
         for (int& elem : memory) { --elem; }    // в результате работы цикла имеет в memory "топологически" отсортированный массив
                                                 // топлогический условно, потому что топологическая сортировка определена только на графах без циклов
@@ -311,6 +314,54 @@ public:
 
         return visited;
     }
+
+    // Эти методы переопределены, но изменения внесены минимальные - бфс от конечной вершины теперь зпускается на инвертирвоанном графе - и все
+    // Мне не нравится, что методы скопированы с минимальными изменениями, по сути это тупо повтор кода
+    // Возможно можно было бы сделать как-то умнее, но я это "умнее" не придумал, поэтому пусть будет такой кусочек говнокода
+    // ТОЛЬКО ДЛЯ НЕВЗВЕШЕННОГО ГРАФА
+    std::vector<int> get_shortest_vertexes(int start_vertex, int end_vertex) { // нужны явный "исток" и явный "сток" (насколько это определимо в неографе)
+        std::vector<int> bfs_result_start(gr.size()); // тут будут храниться кратчайшие пути от стартовой вершины 
+        std::vector<int> bfs_result_end(gr.size()); // тут будут храниться кратчайшие пути от конечной вершины
+        Ograph inverted_gr = get_inverted_gr(); // вспомогательный инверитрованный граф
+
+        bfs_result_start = get_bfs(start_vertex);
+        bfs_result_end = inverted_gr.get_bfs(end_vertex);
+
+        --start_vertex; --end_vertex;
+        memory.clear(); // тут будет результат
+        for (int i = 0; i < gr.size(); ++i) {
+            if (bfs_result_start[i] + bfs_result_end[i] == bfs_result_start[end_vertex]) { // если сумма расстояний до каждой вершины равна кратчайшему пути
+                // то вершина может быть в кратчайшем пути
+                memory.push_back(i + 1);
+            }
+        }
+
+        return memory;
+    }
+
+    // ТОЛЬКО ДЛЯ НЕВЗВЕШЕННОГО ГРАФА
+    std::vector<std::pair<int, int>> get_shortest_edges(int start_vertex, int end_vertex) { // нужны явный "исток" и явный "сток" (насколько это определимо в неографе)
+        std::vector<std::pair<int, int>> result;
+        std::vector<int> bfs_result_start(gr.size()); // тут будут храниться кратчайшие пути от стартовой вершины 
+        std::vector<int> bfs_result_end(gr.size()); // тут будут храниться кратчайшие пути от конечной вершины
+        Ograph inverted_gr = get_inverted_gr(); // вспомогательный инверитрованный граф
+
+        bfs_result_start = get_bfs(start_vertex);
+        bfs_result_end = inverted_gr.get_bfs(end_vertex);
+        --start_vertex; --end_vertex;
+
+        memory.clear(); // тут будет результат
+        for (int vertex = 0; vertex < gr.size(); ++vertex) {
+            for (std::pair<int, int> neighbour : gr[vertex]) {
+                if ((bfs_result_start[vertex] + bfs_result_end[neighbour.first] + 1 == bfs_result_start[end_vertex])) {
+                    result.push_back(std::make_pair(vertex, neighbour.first));
+                }
+            }
+        }
+
+        return result;
+    }
+
 private:
     void dfs_topologic(int vertex) { // поиск в глубину (в таблице visited помечает как component все достижимые вершины, 
         // другими словами - находит компоненту связности текущей веришны
@@ -324,11 +375,22 @@ private:
 
         memory.push_back(vertex);
     }
+
+    Ograph get_inverted_gr() { // построение инвертированного графа
+        Ograph inverted_gr(gr.size()); // вспомогательный инверитрованный граф
+        for (int i = 0; i < gr.size(); ++i) { // заполняем вспомогательный неориентированный инвертированный граф
+            for (std::pair<int, int> edge : gr[i]) {
+                inverted_gr.add_edge(edge.first + 1, i + 1);
+            }
+        }
+
+        return inverted_gr;
+    }
 };
 
 int main()
 {
-    Neograph graph;
+    Ograph graph;
 
     graph.add_edge(1, 2); graph.add_edge(1, 6); graph.add_edge(1, 10);
     graph.add_edge(2, 3);
@@ -343,10 +405,11 @@ int main()
     graph.add_edge(9, 13);
     graph.add_edge(12, 13);
 
-    std::vector<std::pair<int, int>> result = graph.get_shortest_edges(1, 13);
+
+    std::vector<int> result = graph.get_shortest_path(1, 13);
 
 
     for (auto elem : result) {
-        std::cout << elem.first << " " << elem.second << std::endl;
+        std::cout << elem << " ";
     }
 }

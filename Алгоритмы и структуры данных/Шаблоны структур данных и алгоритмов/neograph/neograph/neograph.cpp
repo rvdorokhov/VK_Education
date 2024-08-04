@@ -313,6 +313,7 @@ public:
     }
 
     std::vector<int> get_topologic() { // топлогическая сортировка определена только на графах без циклов, однако описанный алгоритм это не учитывает
+        visited.assign(visited.size(), 0);
         for (int i = 0; i < visited.size(); ++i) { // запускаем топологическую сортировку от каждой непосещенной вершины (на случай если граф несвязный)
             if (!visited[i]) {
                 dfs_topologic(i);
@@ -328,6 +329,8 @@ public:
     }
 
     std::vector<int> get_components() { // Алгоритм Косараджу-Шарира поиска компонент сильной связности ографа
+        visited.assign(visited.size(), 0);
+        memory.clear();
         Ograph inverted_gr = get_inverted_gr(); // вспомогательный инверитрованный граф
 
         memory = inverted_gr.get_topologic();   // запускаем "топлогическую" сортировку от каждой непосещенной вершины (на случай если граф несвязный)
@@ -433,6 +436,25 @@ public:
         return visited;
     }
 
+    std::vector<int> smart_search(int start_vertex = 1) { // Умный поиск кратчайшего пути в ациклическом ориентирвоанном графе с произвольными весами
+                                                          // https://www.youtube.com/watch?v=JakhzSl1JN0
+        start_vertex--;
+        memory.clear();                 // тут будет храниться результат топологической сортировки
+        memory = get_topologic();
+        for (int& vertex : memory) { --vertex; }
+
+        visited.assign(gr.size(), INF); // массив с текущими расстояниями до вершин, переопределяем потому что его испортил get_topologic
+        visited[start_vertex] = 0;
+        for (int vertex : memory) {
+            for (std::pair<int, int> edge : gr[vertex])
+                if (visited[vertex] + edge.second < visited[edge.first]) {
+                    visited[edge.first] = visited[vertex] + edge.second;
+                }
+        }
+
+        return visited;
+    }
+
 private:
     void dfs_topologic(int vertex) { // поиск в глубину (в таблице visited помечает как component все достижимые вершины, 
         // другими словами - находит компоненту связности текущей веришны
@@ -514,7 +536,7 @@ int main()
     graph.add_edge(10, 11, 1);
     graph.add_edge(11, 12, 2);
 
-    std::vector<int> result = graph.get_SPFA(6);
+    std::vector<int> result = graph.smart_search(6);
 
 
     for (auto elem : result) {

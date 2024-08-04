@@ -3,6 +3,7 @@
 #include <list>
 #include <stack>
 #include <queue>
+#include <set>
 
 class Neograph {
 public:
@@ -170,6 +171,34 @@ public:
         }
 
         return result;
+    }
+
+    std::vector<int> get_Dijkstra(int start_vertex = 1) { // Алгоритм Дейкстры поиска кратчайшего пути (работает на взвешенных графах! но только с неотрицательными весами)
+                                                          // наивная реализация - с помощью массива. Есть реализация с помощью std::set для хранения текущих расстояний, 
+                                                          // но мне лень писать еще одну Дейкстру/
+        start_vertex--;
+        int minim, vertex_minim;
+        std::vector<bool> cur_mins(gr.size());    // массив флагов. 1 значит, что расстояние до вершины минимально
+        visited.assign(gr.size(), INF); // массив с текущими расстояниями до вершин
+        visited[start_vertex] = 0;
+
+
+        for (int i = 0; i < gr.size(); ++i) { // т.к. мы гарантированно найдем все расстояния за V повторов (V - количество ребер)
+            minim = INF;
+            for (int vertex = 0; vertex < visited.size(); ++vertex) // определение текущего минимального расстояния
+                if ((visited[vertex] < minim) && (!cur_mins[vertex])) {
+                    vertex_minim = vertex;
+                    minim = visited[vertex];
+                }
+            cur_mins[vertex_minim] = 1;
+
+            for (std::pair<int, int> neighbour: gr[vertex_minim]) {
+                if (minim + neighbour.second < visited[neighbour.first])
+                    visited[neighbour.first] = minim + neighbour.second;
+            }
+        }
+
+        return visited;
     }
 
 protected:
@@ -390,23 +419,42 @@ private:
 
 int main()
 {
-    Ograph graph;
+    Neograph graph;
 
-    graph.add_edge(1, 2); graph.add_edge(1, 6); graph.add_edge(1, 10);
-    graph.add_edge(2, 3);
-    graph.add_edge(3, 4);
-    graph.add_edge(6, 7); graph.add_edge(6, 8);
-    graph.add_edge(10, 11);
-    graph.add_edge(11, 8);
-    graph.add_edge(4, 7); graph.add_edge(4, 5);
-    graph.add_edge(7, 9);
-    graph.add_edge(8, 9); graph.add_edge(8, 12);
-    graph.add_edge(5, 13);
-    graph.add_edge(9, 13);
-    graph.add_edge(12, 13);
+    //graph.add_edge(1, 2); graph.add_edge(1, 6); graph.add_edge(1, 10);
+    //graph.add_edge(2, 3);
+    //graph.add_edge(3, 4);
+    //graph.add_edge(6, 7); graph.add_edge(6, 8);
+    //graph.add_edge(10, 11);
+    //graph.add_edge(11, 8);
+    //graph.add_edge(4, 7); graph.add_edge(4, 5);
+    //graph.add_edge(7, 9);
+    //graph.add_edge(8, 9); graph.add_edge(8, 12);
+    //graph.add_edge(5, 13);
+    //graph.add_edge(9, 13);
+    //graph.add_edge(12, 13);
 
+    graph.add_edge(1, 2, 15);
+    graph.add_edge(2, 3, 25);
+    graph.add_edge(3, 4, 10);
+    graph.add_edge(1, 6, 20);
+    graph.add_edge(2, 7, 0);
+    graph.add_edge(3, 8, 70);
+    graph.add_edge(4, 9, 50);
+    graph.add_edge(5, 10, 10);
+    graph.add_edge(7, 8, 40);
+    graph.add_edge(8, 9, 30);
+    graph.add_edge(6, 11, 30);
+    graph.add_edge(7, 11, 10);
+    graph.add_edge(8, 13, 60);
+    graph.add_edge(9, 13, 5);
+    graph.add_edge(9, 14, 70);
+    graph.add_edge(10, 15, 25);
+    graph.add_edge(11, 12, 10);
+    graph.add_edge(12, 13, 35);
+    graph.add_edge(13, 14, 70);
 
-    std::vector<int> result = graph.get_shortest_path(1, 13);
+    std::vector<int> result = graph.get_Dijkstra_naive(8);
 
 
     for (auto elem : result) {

@@ -183,7 +183,7 @@ public:
         visited[start_vertex] = 0;
 
 
-        for (int i = 0; i < gr.size(); ++i) { // т.к. мы гарантированно найдем все расстояния за V повторов (V - количество ребер)
+        for (int i = 0; i < gr.size(); ++i) { // т.к. мы гарантированно найдем все расстояния за V повторов (V - количество вершин)
             minim = INF;
             for (int vertex = 0; vertex < visited.size(); ++vertex) // определение текущего минимального расстояния
                 if ((visited[vertex] < minim) && (!cur_mins[vertex])) {
@@ -391,6 +391,48 @@ public:
         return result;
     }
 
+    std::vector<int> get_BellmanFord(int start_vertex = 1) { // Алгоритм Беллмана-Форда поиска кратчайшего пути (работает на взвешенных графах с отрицательными ребрами! но не должно быть "отрицательных циклов")
+                                                             // Я не реализовал этот алгоритм для неографа потому что из-за особенности хранения графа любой 
+                                                             // неограф с хотя бы одним отрицательным ребром имеет отрицательный цикл, в котором алгоритм застревает
+                                                             // Вообще для алгоритма Беллмана-Форда удобнее хранить граф в виде массива структур с 3 полями - вершина, вершина, вес ребра между ними
+                                                             // тогда и код будет красивее, и алгоритм сможет работать и с ографом, и с неографом
+        start_vertex--; bool flag = true;
+        visited.assign(gr.size(), INF); // массив с текущими расстояниями до вершин
+        visited[start_vertex] = 0;
+
+        while (flag) {
+            flag = false;
+            for (int vertex = 0; vertex < gr.size(); ++vertex)
+                for (std::pair<int, int> edge : gr[vertex])
+                    if (visited[vertex] + edge.second < visited[edge.first]) {
+                        visited[edge.first] = visited[vertex] + edge.second;
+                        flag = true;
+                    }
+        }
+
+        return visited;
+    }
+
+    std::vector<int> get_SPFA(int start_vertex = 1) { // Алгоритм Мура или SPFA
+        start_vertex--; 
+        int vertex;
+        visited.assign(gr.size(), INF); // массив с текущими расстояниями до вершин
+        std::queue<int> q;
+        visited[start_vertex] = 0; q.push(start_vertex);
+
+        while (!q.empty()) {
+            vertex = q.front();
+            q.pop();
+            for (std::pair<int, int> edge : gr[vertex])
+                if (visited[vertex] + edge.second < visited[edge.first]) {
+                    visited[edge.first] = visited[vertex] + edge.second;
+                    q.push(edge.first);
+                }
+        }
+
+        return visited;
+    }
+
 private:
     void dfs_topologic(int vertex) { // поиск в глубину (в таблице visited помечает как component все достижимые вершины, 
         // другими словами - находит компоненту связности текущей веришны
@@ -419,7 +461,7 @@ private:
 
 int main()
 {
-    Neograph graph;
+    Ograph graph;
 
     //graph.add_edge(1, 2); graph.add_edge(1, 6); graph.add_edge(1, 10);
     //graph.add_edge(2, 3);
@@ -434,27 +476,45 @@ int main()
     //graph.add_edge(9, 13);
     //graph.add_edge(12, 13);
 
-    graph.add_edge(1, 2, 15);
-    graph.add_edge(2, 3, 25);
-    graph.add_edge(3, 4, 10);
-    graph.add_edge(1, 6, 20);
-    graph.add_edge(2, 7, 0);
-    graph.add_edge(3, 8, 70);
-    graph.add_edge(4, 9, 50);
-    graph.add_edge(5, 10, 10);
-    graph.add_edge(7, 8, 40);
-    graph.add_edge(8, 9, 30);
-    graph.add_edge(6, 11, 30);
-    graph.add_edge(7, 11, 10);
-    graph.add_edge(8, 13, 60);
-    graph.add_edge(9, 13, 5);
-    graph.add_edge(9, 14, 70);
-    graph.add_edge(10, 15, 25);
-    graph.add_edge(11, 12, 10);
-    graph.add_edge(12, 13, 35);
-    graph.add_edge(13, 14, 70);
+    //graph.add_edge(1, 2, 15);
+    //graph.add_edge(2, 3, 25);
+    //graph.add_edge(3, 4, 10);
+    //graph.add_edge(1, 6, 20);
+    //graph.add_edge(2, 7, 0);
+    //graph.add_edge(3, 8, 70);
+    //graph.add_edge(4, 9, 50);
+    //graph.add_edge(5, 10, 10);
+    //graph.add_edge(7, 8, 40);
+    //graph.add_edge(8, 9, 30);
+    //graph.add_edge(6, 11, 30);
+    //graph.add_edge(7, 11, 10);
+    //graph.add_edge(8, 13, 60);
+    //graph.add_edge(9, 13, 5);
+    //graph.add_edge(9, 14, 70);
+    //graph.add_edge(10, 15, 25);
+    //graph.add_edge(11, 12, 10);
+    //graph.add_edge(12, 13, 35);
+    //graph.add_edge(13, 14, 70);
 
-    std::vector<int> result = graph.get_Dijkstra_naive(8);
+    graph.add_edge(1, 2, 1);
+    graph.add_edge(2, 3, 4);
+    graph.add_edge(3, 4, 5);
+    graph.add_edge(5, 1, 7);
+    graph.add_edge(6, 2, 2);
+    graph.add_edge(7, 3, 3);
+    graph.add_edge(4, 8, -3);
+    graph.add_edge(6, 5, 5);
+    graph.add_edge(6, 7, -2);
+    graph.add_edge(7, 8, 7);
+    graph.add_edge(9, 5, -6);
+    graph.add_edge(6, 10, 4);
+    graph.add_edge(7, 11, 6);
+    graph.add_edge(8, 12, 4);
+    graph.add_edge(10, 9, 3);
+    graph.add_edge(10, 11, 1);
+    graph.add_edge(11, 12, 2);
+
+    std::vector<int> result = graph.get_SPFA(6);
 
 
     for (auto elem : result) {

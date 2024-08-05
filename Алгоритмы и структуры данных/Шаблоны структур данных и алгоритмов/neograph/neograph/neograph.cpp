@@ -390,6 +390,20 @@ public:
         return result;
     }
 
+    bool has_negative_cycle() {
+        get_BellmanFord();
+
+        bool flag = false;
+        for (int vertex = 0; vertex < gr.size(); ++vertex)
+            for (std::pair<int, int> edge : gr[vertex])
+                if (visited[vertex] + edge.second < visited[edge.first]) {
+                    visited[edge.first] = visited[vertex] + edge.second;
+                    flag = true;
+                }
+
+        return flag;
+    }
+
     std::vector<int> get_BellmanFord(int start_vertex = 1) { // Алгоритм Беллмана-Форда поиска кратчайшего пути (работает на взвешенных графах с отрицательными ребрами! но не должно быть "отрицательных циклов")
                                                              // Я не реализовал этот алгоритм для неографа потому что из-за особенности хранения графа любой 
                                                              // неограф с хотя бы одним отрицательным ребром имеет отрицательный цикл, в котором алгоритм застревает
@@ -398,15 +412,11 @@ public:
         visited.assign(gr.size(), INF); // массив с текущими расстояниями до вершин
         visited[start_vertex] = 0;
 
-        while (flag) {
-            flag = false;
+        for(int i = 0; i < gr.size(); ++i) // почему именно такой цикл? потому что за V итераций мы гарантированно найдем все растояния (V - количество вершин)
             for (int vertex = 0; vertex < gr.size(); ++vertex)
-                for (std::pair<int, int> edge : gr[vertex])
-                    if (visited[vertex] + edge.second < visited[edge.first]) {
+                for (std::pair<int, int> edge : gr[vertex]) 
+                    if (visited[vertex] + edge.second < visited[edge.first]) 
                         visited[edge.first] = visited[vertex] + edge.second;
-                        flag = true;
-                    }
-        }
 
         return visited;
     }
@@ -500,7 +510,7 @@ public:
         std::vector<int> visited_memory = visited;
         for (int vertex = 0; vertex < gr.size(); ++vertex) {
             dist[vertex] = get_Dijkstra(vertex + 1); // запускаем Дейкстру для каждой вершины
-            for (int i = 0; i < gr.size(); ++i)
+            for (int i = 0; i < gr.size(); ++i)      // корректируем итоговую длину пути
                 dist[vertex][i] = dist[vertex][i] - visited_memory[vertex] + visited_memory[i];
         }
 
@@ -539,78 +549,4 @@ private:
 
 int main()
 {
-    Ograph graph;
-
-    //graph.add_edge(1, 2); graph.add_edge(1, 6); graph.add_edge(1, 10);
-    //graph.add_edge(2, 3);
-    //graph.add_edge(3, 4);
-    //graph.add_edge(6, 7); graph.add_edge(6, 8);
-    //graph.add_edge(10, 11);
-    //graph.add_edge(11, 8);
-    //graph.add_edge(4, 7); graph.add_edge(4, 5);
-    //graph.add_edge(7, 9);
-    //graph.add_edge(8, 9); graph.add_edge(8, 12);
-    //graph.add_edge(5, 13);
-    //graph.add_edge(9, 13);
-    //graph.add_edge(12, 13);
-
-    //graph.add_edge(1, 2, 15);
-    //graph.add_edge(2, 3, 25);
-    //graph.add_edge(3, 4, 10);
-    //graph.add_edge(1, 6, 20);
-    //graph.add_edge(2, 7, 0);
-    //graph.add_edge(3, 8, 70);
-    //graph.add_edge(4, 9, 50);
-    //graph.add_edge(5, 10, 10);
-    //graph.add_edge(7, 8, 40);
-    //graph.add_edge(8, 9, 30);
-    //graph.add_edge(6, 11, 30);
-    //graph.add_edge(7, 11, 10);
-    //graph.add_edge(8, 13, 60);
-    //graph.add_edge(9, 13, 5);
-    //graph.add_edge(9, 14, 70);
-    //graph.add_edge(10, 15, 25);
-    //graph.add_edge(11, 12, 10);
-    //graph.add_edge(12, 13, 35);
-    //graph.add_edge(13, 14, 70);
-
-    //graph.add_edge(1, 2, 1);
-    //graph.add_edge(2, 3, 4);
-    //graph.add_edge(3, 4, 5);
-    //graph.add_edge(5, 1, 7);
-    //graph.add_edge(6, 2, 2);
-    //graph.add_edge(7, 3, 3);
-    //graph.add_edge(4, 8, -3);
-    //graph.add_edge(6, 5, 5);
-    //graph.add_edge(6, 7, -2);
-    //graph.add_edge(7, 8, 7);
-    //graph.add_edge(9, 5, -6);
-    //graph.add_edge(6, 10, 4);
-    //graph.add_edge(7, 11, 6);
-    //graph.add_edge(8, 12, 4);
-    //graph.add_edge(10, 9, 3);
-    //graph.add_edge(10, 11, 1);
-    //graph.add_edge(11, 12, 2);
-
-    graph.add_edge(1, 2, 5);
-    graph.add_edge(2, 3, 5);
-    graph.add_edge(2, 4, 3);
-    graph.add_edge(3, 1, -3);
-    graph.add_edge(4, 1, 2);
-    graph.add_edge(4, 3, -5);
-
-    //graph.add_edge(1, 2, 3);
-    //graph.add_edge(1, 3, 10);
-    //graph.add_edge(3, 2, -10);
-    //graph.add_edge(2, 4, 5);
-
-    std::vector<std::vector<int>> result = graph.get_Johnson();
-
-
-    for (int i = 0; i < result[0].size(); ++i) {
-        for (int j = 0; j < result[0].size(); ++j) {
-            std::cout << result[i][j] << " ";
-        }
-        std::cout << "\n";
-    }
 }

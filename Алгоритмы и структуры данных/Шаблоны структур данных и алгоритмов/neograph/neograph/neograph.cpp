@@ -191,7 +191,7 @@ public:
     }
 
 protected:
-    const int INF = 10e9;           // константа условной бесконечности
+    const int INF = 1e9;            // константа условной бесконечности
     std::vector<std::list<
         std::pair<int, int>>        // <номер вершины, вес ведущего в него ребра>
         > gr;          // gr содержит информацию о связях в вершинах
@@ -394,7 +394,6 @@ public:
                                                              // Я не реализовал этот алгоритм для неографа потому что из-за особенности хранения графа любой 
                                                              // неограф с хотя бы одним отрицательным ребром имеет отрицательный цикл, в котором алгоритм застревает
                                                              // Вообще для алгоритма Беллмана-Форда удобнее хранить граф в виде массива структур с 3 полями - вершина, вершина, вес ребра между ними
-                                                             // тогда и код будет красивее, и алгоритм сможет работать и с ографом, и с неографом
         start_vertex--; bool flag = true;
         visited.assign(gr.size(), INF); // массив с текущими расстояниями до вершин
         visited[start_vertex] = 0;
@@ -451,6 +450,67 @@ public:
         return visited;
     }
 
+    std::vector<std::vector<int>> get_FloydWarshall() { // поиск расстояний от каждой вершины до каждй вершины (для простых ографов без петель и отрицательных циклов)
+        std::vector<std::vector<int>> dist(gr.size(), std::vector<int>(gr.size(), INF)); // матрица-результат, в ней же и будем проводить вычисления
+
+        for (int i = 0; i < gr.size(); ++i) { dist[i][i] = 0; } // заполняем диагональ матрицы 0
+
+        for (int vertex = 0; vertex < gr.size(); ++vertex)
+            for (std::pair<int, int> edge : gr[vertex])
+                dist[vertex][edge.first] = edge.second;
+
+        for (int v_between = 0; v_between < gr.size(); ++v_between)
+            for (int v_from = 0; v_from < gr.size(); ++v_from)
+                for (int v_to = 0; v_to < gr.size(); ++v_to)
+                    if (dist[v_from][v_between] + dist[v_between][v_to] < dist[v_from][v_to])
+                        dist[v_from][v_to] = dist[v_from][v_between] + dist[v_between][v_to];
+
+        std::vector<std::vector<int>> result = dist;
+
+        return result;
+    }
+
+    std::vector<std::vector<int>> get_Johnson() {
+        visited.assign(gr.size(), 0);
+        std::vector<std::list<
+            std::pair<int, int>>
+            > gr_memory; // вспомогательное хранилище ребер
+        std::vector<std::vector<int>> dist(gr.size(), std::vector<int>(gr.size())); // матрица-результат, в ней же и будем проводить вычисления
+                                                                                       // инициализиурем все 0, чтобы запустить алгоритм Беллмана-Форда "от вех вершин сразу"
+        // Классический вариант алгоритма Беллмана-Форда. Тупо ctrl+c ctrl+v из реализации сверху
+        // Решил не мудрить с выноской основной части алгоритма в отдельный приватный метод, чтобы сохранить наглядность 
+        // и алгоритма Беллмана-Форда, и алгоритма Джонсона (проще говоря чтобы все в одном месте было)
+
+        bool flag = true;
+        while (flag) {
+            flag = false;
+            for (int vertex = 0; vertex < gr.size(); ++vertex)
+                for (std::pair<int, int> edge : gr[vertex])
+                    if (visited[vertex] + edge.second < visited[edge.first]) {
+                        visited[edge.first] = visited[vertex] + edge.second;
+                        flag = true;
+                    }
+        }
+
+        gr_memory = gr;
+        for (int vertex = 0; vertex < gr.size(); ++vertex)
+            for (std::pair<int, int>& edge : gr[vertex])
+                edge.second = edge.second + visited[vertex] - visited[edge.first];
+
+        std::vector<int> visited_memory = visited;
+        for (int vertex = 0; vertex < gr.size(); ++vertex) {
+            dist[vertex] = get_Dijkstra(vertex + 1); // запускаем Дейкстру для каждой вершины
+            for (int i = 0; i < gr.size(); ++i)
+                dist[vertex][i] = dist[vertex][i] - visited_memory[vertex] + visited_memory[i];
+        }
+
+        gr = gr_memory;
+
+        std::vector<std::vector<int>> result = dist;
+
+        return result;
+    }
+
 private:
     void dfs_topologic(int vertex) { // поиск в глубину (в таблице visited помечает как component все достижимые вершины, 
         // другими словами - находит компоненту связности текущей веришны
@@ -479,7 +539,7 @@ private:
 
 int main()
 {
-    Neograph graph;
+    Ograph graph;
 
     //graph.add_edge(1, 2); graph.add_edge(1, 6); graph.add_edge(1, 10);
     //graph.add_edge(2, 3);
@@ -532,10 +592,25 @@ int main()
     //graph.add_edge(10, 11, 1);
     //graph.add_edge(11, 12, 2);
 
-    std::vector<std::pair<int, int>> result = graph.get_shortest_edges(1, 13);
+    graph.add_edge(1, 2, 5);
+    graph.add_edge(2, 3, 5);
+    graph.add_edge(2, 4, 3);
+    graph.add_edge(3, 1, -3);
+    graph.add_edge(4, 1, 2);
+    graph.add_edge(4, 3, -5);
+
+    //graph.add_edge(1, 2, 3);
+    //graph.add_edge(1, 3, 10);
+    //graph.add_edge(3, 2, -10);
+    //graph.add_edge(2, 4, 5);
+
+    std::vector<std::vector<int>> result = graph.get_Johnson();
 
 
-    for (auto elem : result) {
-        std::cout << elem.first << " " << elem.second << "\n";
+    for (int i = 0; i < result[0].size(); ++i) {
+        for (int j = 0; j < result[0].size(); ++j) {
+            std::cout << result[i][j] << " ";
+        }
+        std::cout << "\n";
     }
 }

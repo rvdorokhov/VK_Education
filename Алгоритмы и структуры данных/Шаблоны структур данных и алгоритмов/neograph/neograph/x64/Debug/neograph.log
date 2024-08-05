@@ -2,5 +2,5 @@
 C:\Users\1\Desktop\BMSTU\VK Education\Алгоритмы и структуры данных\Шаблоны структур данных и алгоритмов\neograph\neograph\neograph.cpp(194,21): warning C4244: инициализация: преобразование "double" в "const int", возможна потеря данных
 C:\Users\1\Desktop\BMSTU\VK Education\Алгоритмы и структуры данных\Шаблоны структур данных и алгоритмов\neograph\neograph\neograph.cpp(47,1): warning C4267: return: преобразование из "size_t" в "int"; возможна потеря данных
 C:\Users\1\Desktop\BMSTU\VK Education\Алгоритмы и структуры данных\Шаблоны структур данных и алгоритмов\neograph\neograph\neograph.cpp(317,1): warning C4267: аргумент: преобразование из "size_t" в "int"; возможна потеря данных
-C:\Users\1\Desktop\BMSTU\VK Education\Алгоритмы и структуры данных\Шаблоны структур данных и алгоритмов\neograph\neograph\neograph.cpp(469,1): warning C4267: аргумент: преобразование из "size_t" в "int"; возможна потеря данных
+C:\Users\1\Desktop\BMSTU\VK Education\Алгоритмы и структуры данных\Шаблоны структур данных и алгоритмов\neograph\neograph\neograph.cpp(529,1): warning C4267: аргумент: преобразование из "size_t" в "int"; возможна потеря данных
   neograph.vcxproj -> C:\Users\1\Desktop\BMSTU\VK Education\Алгоритмы и структуры данных\Шаблоны структур данных и алгоритмов\neograph\x64\Debug\neograph.exe

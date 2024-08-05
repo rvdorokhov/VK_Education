@@ -137,15 +137,10 @@ public:
 
         bfs_result_start = get_bfs(start_vertex);
         bfs_result_end = get_bfs(end_vertex);
+        
+        shortest_vertexes(end_vertex - 1, bfs_result_start, bfs_result_end);
 
-        --start_vertex; --end_vertex;
-        memory.clear(); // тут будет результат
-        for (int i = 0; i < gr.size(); ++i) {
-            if (bfs_result_start[i] + bfs_result_end[i] == bfs_result_start[end_vertex]) { // если сумма расстояний до каждой вершины равна кратчайшему пути
-                                                                                           // то вершина может быть в кратчайшем пути
-                memory.push_back(i + 1);
-            }
-        }
+        for (int& elem : memory) { ++elem; }
 
         return memory;
     }
@@ -159,16 +154,10 @@ public:
 
         bfs_result_start = get_bfs(start_vertex);
         bfs_result_end = get_bfs(end_vertex);
-        --start_vertex; --end_vertex;
 
-        memory.clear(); // тут будет результат
-        for (int vertex = 0; vertex < gr.size(); ++vertex) {
-            for (std::pair<int ,int> neighbour : gr[vertex]) {
-                if ((bfs_result_start[vertex] + bfs_result_end[neighbour.first] + 1 == bfs_result_start[end_vertex])) {
-                    result.push_back(std::make_pair(vertex, neighbour.first));
-                }
-            }
-        }
+        result = shortest_edges(end_vertex - 1, bfs_result_start, bfs_result_end);
+
+        for (std::pair<int, int> &elem : result) { ++elem.first; ++elem.second; }
 
         return result;
     }
@@ -264,6 +253,29 @@ protected:
         }
     }
 
+    void shortest_vertexes(int end_vertex, std::vector<int> bfs_result_start, std::vector<int> bfs_result_end) {
+        memory.clear(); // тут будет результат
+        for (int i = 0; i < gr.size(); ++i) {
+            if (bfs_result_start[i] + bfs_result_end[i] == bfs_result_start[end_vertex]) { // если сумма расстояний до каждой вершины равна кратчайшему пути
+                // то вершина может быть в кратчайшем пути
+                memory.push_back(i);
+            }
+        }
+    }
+
+    std::vector<std::pair<int, int>> shortest_edges(int end_vertex, std::vector<int> bfs_result_start, std::vector<int> bfs_result_end) {
+        std::vector<std::pair<int, int>> result;
+        for (int vertex = 0; vertex < gr.size(); ++vertex) {
+            for (std::pair<int, int> neighbour : gr[vertex]) {
+                if ((bfs_result_start[vertex] + bfs_result_end[neighbour.first] + 1 == bfs_result_start[end_vertex])) {
+                    result.push_back(std::make_pair(vertex, neighbour.first));
+                }
+            }
+        }
+
+        return result;
+    }
+
 private:
     bool dfs_bipartite(int vertex, int colour) { // модификация дфс для проверки на двудольность
         visited[vertex] = colour; bool flag = true;
@@ -320,9 +332,7 @@ public:
             }
         }
 
-        for (int& elem : memory) {
-            elem++;
-        }
+        for (int& elem : memory) { elem++; }
 
         std::reverse(memory.begin(), memory.end());
         return memory;
@@ -347,9 +357,6 @@ public:
         return visited;
     }
 
-    // Эти методы переопределены, но изменения внесены минимальные - бфс от конечной вершины теперь зпускается на инвертирвоанном графе - и все
-    // Мне не нравится, что методы скопированы с минимальными изменениями, по сути это тупо повтор кода
-    // Возможно можно было бы сделать как-то умнее, но я это "умнее" не придумал, поэтому пусть будет такой кусочек говнокода
     // ТОЛЬКО ДЛЯ НЕВЗВЕШЕННОГО ГРАФА
     std::vector<int> get_shortest_vertexes(int start_vertex, int end_vertex) { // нужны явный "исток" и явный "сток" (насколько это определимо в неографе)
         std::vector<int> bfs_result_start(gr.size()); // тут будут храниться кратчайшие пути от стартовой вершины 
@@ -359,14 +366,9 @@ public:
         bfs_result_start = get_bfs(start_vertex);
         bfs_result_end = inverted_gr.get_bfs(end_vertex);
 
-        --start_vertex; --end_vertex;
-        memory.clear(); // тут будет результат
-        for (int i = 0; i < gr.size(); ++i) {
-            if (bfs_result_start[i] + bfs_result_end[i] == bfs_result_start[end_vertex]) { // если сумма расстояний до каждой вершины равна кратчайшему пути
-                // то вершина может быть в кратчайшем пути
-                memory.push_back(i + 1);
-            }
-        }
+        shortest_vertexes(end_vertex - 1, bfs_result_start, bfs_result_end);
+
+        for (int& elem : memory) { ++elem; }
 
         return memory;
     }
@@ -380,16 +382,10 @@ public:
 
         bfs_result_start = get_bfs(start_vertex);
         bfs_result_end = inverted_gr.get_bfs(end_vertex);
-        --start_vertex; --end_vertex;
 
-        memory.clear(); // тут будет результат
-        for (int vertex = 0; vertex < gr.size(); ++vertex) {
-            for (std::pair<int, int> neighbour : gr[vertex]) {
-                if ((bfs_result_start[vertex] + bfs_result_end[neighbour.first] + 1 == bfs_result_start[end_vertex])) {
-                    result.push_back(std::make_pair(vertex, neighbour.first));
-                }
-            }
-        }
+        result = shortest_edges(end_vertex - 1, bfs_result_start, bfs_result_end);
+
+        for (std::pair<int, int>& elem : result) { ++elem.first; ++elem.second; }
 
         return result;
     }
@@ -483,7 +479,7 @@ private:
 
 int main()
 {
-    Ograph graph;
+    Neograph graph;
 
     //graph.add_edge(1, 2); graph.add_edge(1, 6); graph.add_edge(1, 10);
     //graph.add_edge(2, 3);
@@ -518,28 +514,28 @@ int main()
     //graph.add_edge(12, 13, 35);
     //graph.add_edge(13, 14, 70);
 
-    graph.add_edge(1, 2, 1);
-    graph.add_edge(2, 3, 4);
-    graph.add_edge(3, 4, 5);
-    graph.add_edge(5, 1, 7);
-    graph.add_edge(6, 2, 2);
-    graph.add_edge(7, 3, 3);
-    graph.add_edge(4, 8, -3);
-    graph.add_edge(6, 5, 5);
-    graph.add_edge(6, 7, -2);
-    graph.add_edge(7, 8, 7);
-    graph.add_edge(9, 5, -6);
-    graph.add_edge(6, 10, 4);
-    graph.add_edge(7, 11, 6);
-    graph.add_edge(8, 12, 4);
-    graph.add_edge(10, 9, 3);
-    graph.add_edge(10, 11, 1);
-    graph.add_edge(11, 12, 2);
+    //graph.add_edge(1, 2, 1);
+    //graph.add_edge(2, 3, 4);
+    //graph.add_edge(3, 4, 5);
+    //graph.add_edge(5, 1, 7);
+    //graph.add_edge(6, 2, 2);
+    //graph.add_edge(7, 3, 3);
+    //graph.add_edge(4, 8, -3);
+    //graph.add_edge(6, 5, 5);
+    //graph.add_edge(6, 7, -2);
+    //graph.add_edge(7, 8, 7);
+    //graph.add_edge(9, 5, -6);
+    //graph.add_edge(6, 10, 4);
+    //graph.add_edge(7, 11, 6);
+    //graph.add_edge(8, 12, 4);
+    //graph.add_edge(10, 9, 3);
+    //graph.add_edge(10, 11, 1);
+    //graph.add_edge(11, 12, 2);
 
-    std::vector<int> result = graph.smart_search(6);
+    std::vector<std::pair<int, int>> result = graph.get_shortest_edges(1, 13);
 
 
     for (auto elem : result) {
-        std::cout << elem << " ";
+        std::cout << elem.first << " " << elem.second << "\n";
     }
 }

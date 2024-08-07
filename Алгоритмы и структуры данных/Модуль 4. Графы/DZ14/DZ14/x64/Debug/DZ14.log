@@ -1,0 +1,4 @@
+﻿  DZ14.cpp
+C:\Users\1\Desktop\BMSTU\VK Education\Алгоритмы и структуры данных\Модуль 4. Графы\DZ14\DZ14\DZ14.cpp(74,21): warning C4244: инициализация: преобразование "double" в "const int", возможна потеря данных
+C:\Users\1\Desktop\BMSTU\VK Education\Алгоритмы и структуры данных\Модуль 4. Графы\DZ14\DZ14\DZ14.cpp(35,1): warning C4267: return: преобразование из "size_t" в "int"; возможна потеря данных
+  DZ14.vcxproj -> C:\Users\1\Desktop\BMSTU\VK Education\Алгоритмы и структуры данных\Модуль 4. Графы\DZ14\x64\Debug\DZ14.exe

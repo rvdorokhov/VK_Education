@@ -8,7 +8,7 @@
 * 6) Поиск циклов (в том числе от конкретной вершины)
 * 7) Проверка на двудольность 
 * 8) Классический поиск в ширину
-* 9) Классический поиск в длину и его различные модификации
+* 9) Классический поиск в глубину и его различные модификации
 * 10) Восстановление кратчайшего пути для классического поиска в ширину
 * 11) Поиск ВСЕХ вершин и ВСЕХ ребер, которые могут содержаться в кратчайшем пути
 * 12) Алгоритм Дейкстры поиска кратчайшего пути
@@ -218,6 +218,19 @@ public:
         return visited;
     }
 
+    std::vector<std::pair<int, int>> get_bridges() {
+        // не забудт инициализировать memory и memory_add -1
+        // visited 0
+        memory.assign(gr.size(), 0);
+        memory_add.assign(gr.size(), 0);
+        visited.assign(gr.size(), 0);
+        result.clear();
+
+        dfs_bridge_search(0, -1);
+
+        return result;
+    }
+
 protected:
     const int INF = 1e9;            // константа условной бесконечности
     std::vector<std::list<
@@ -226,6 +239,8 @@ protected:
                                     // inverted_gr - вспомогательный инвертированный граф, используемый в некоторых алгоритмах
     std::vector<int> visited;       // используются в функциях и процедурах для хранения промежуточных и итоговых значений
     std::vector<int> memory;
+    std::vector<int> memory_add;    // memory_add и result инициализированы только для алгоритма поиска мостов
+    std::vector<std::pair<int, int>> result;
 
     void dfs(int vertex, int component = 1) { // поиск в глубину (в таблице visited помечает как component все достижимые вершины, 
                                               // другими словами - находит компоненту связности текущей веришны)
@@ -304,6 +319,28 @@ protected:
         return result;
     }
 
+    // Этого алгоритма нет в приведенном выше курсе
+    // Прямое ребро - ребро, которое ведет в вершину, которая еще не была посещена dfs
+    // Обратное ребро - ребро, которое ведет в вершину, которая уже была посещена dfs
+    void dfs_bridge_search(int cur_v, int pred_v) {
+        visited[cur_v] = 1; // Помечаем вершину как посещенную
+        memory_add[cur_v] = (pred_v == -1 ? 0 : memory[pred_v] + 1); // в memory_add будем хранить "лучшие" глубины, а в memory глубины как они встречались в обходе dfs
+        memory[cur_v] = (pred_v == -1 ? 0 : memory[pred_v] + 1);     // в ? проверка на -1, чтобы гарантировать корректное обращение к элементу массива
+
+        for (auto neighbour : gr[cur_v]) { // Обходим соседей вершины
+            if (!visited[neighbour.first]) { // если ребро - прямое, то
+                dfs_bridge_search(neighbour.first, cur_v); // запускаем обход от этого ребра
+                if (memory_add[neighbour.first] < memory_add[cur_v]) { memory_add[cur_v] = memory_add[neighbour.first]; } // После обхода проверяем - если лучшая глубина соседа меньше лучшей глубины текущей вершины, то
+                                                                                                                          // перезаписываем лучшую глубину текущей вершины. Если описанное условие выполняется, то это значит, что
+                                                                                                                          // найденная раннее глубина вершины не является лучшей, вот мы ее и перезаписываем
+                if (memory[cur_v] < memory_add[neighbour.first]) { result.push_back({ cur_v, neighbour.first }); }        // Если условие выполняется, то ребро является мостом - записываем его в результат
+            }
+            else { // если ребро - обратное и глубина соседа "лучше" глубины текущей веришны, то перезаписываем лучшую глубину текущей вершины
+                if (memory[neighbour.first] < memory_add[cur_v]) { memory_add[cur_v] = memory[neighbour.first]; }
+            }
+        }
+    }
+
 private:
     bool dfs_bipartite(int vertex, int colour) { // модификация дфс для проверки на двудольность
         visited[vertex] = colour; bool flag = true;
@@ -322,6 +359,8 @@ private:
         return flag;
     }
 };
+
+
 
 class Ograph : public Neograph {
 public:

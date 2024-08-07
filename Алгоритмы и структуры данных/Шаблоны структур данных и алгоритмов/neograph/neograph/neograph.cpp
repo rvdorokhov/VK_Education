@@ -328,16 +328,17 @@ protected:
         memory[cur_v] = (pred_v == -1 ? 0 : memory[pred_v] + 1);     // в ? проверка на -1, чтобы гарантировать корректное обращение к элементу массива
 
         for (auto neighbour : gr[cur_v]) { // Обходим соседей вершины
-            if (!visited[neighbour.first]) { // если ребро - прямое, то
-                dfs_bridge_search(neighbour.first, cur_v); // запускаем обход от этого ребра
-                if (memory_add[neighbour.first] < memory_add[cur_v]) { memory_add[cur_v] = memory_add[neighbour.first]; } // После обхода проверяем - если лучшая глубина соседа меньше лучшей глубины текущей вершины, то
-                                                                                                                          // перезаписываем лучшую глубину текущей вершины. Если описанное условие выполняется, то это значит, что
-                                                                                                                          // найденная раннее глубина вершины не является лучшей, вот мы ее и перезаписываем
-                if (memory[cur_v] < memory_add[neighbour.first]) { result.push_back({ cur_v, neighbour.first }); }        // Если условие выполняется, то ребро является мостом - записываем его в результат
-            }
-            else { // если ребро - обратное и глубина соседа "лучше" глубины текущей веришны, то перезаписываем лучшую глубину текущей вершины
-                if (memory[neighbour.first] < memory_add[cur_v]) { memory_add[cur_v] = memory[neighbour.first]; }
-            }
+            if (neighbour.first != pred_v)
+                if (!visited[neighbour.first]) { // если ребро - прямое, то
+                    dfs_bridge_search(neighbour.first, cur_v); // запускаем обход от этого ребра
+                    if (memory_add[neighbour.first] < memory_add[cur_v]) { memory_add[cur_v] = memory_add[neighbour.first]; } // После обхода проверяем - если лучшая глубина соседа меньше лучшей глубины текущей вершины, то
+                                                                                                                              // перезаписываем лучшую глубину текущей вершины. Если описанное условие выполняется, то это значит, что
+                                                                                                                              // найденная раннее глубина вершины не является лучшей, вот мы ее и перезаписываем
+                    if (memory[cur_v] < memory_add[neighbour.first]) { result.push_back({ cur_v, neighbour.first }); }        // Если условие выполняется, то ребро является мостом - записываем его в результат
+                }
+                else { // если ребро - обратное и глубина соседа "лучше" глубины текущей веришны, то перезаписываем лучшую глубину текущей вершины
+                    if (memory[neighbour.first] < memory_add[cur_v]) { memory_add[cur_v] = memory[neighbour.first]; }
+                }
         }
     }
 

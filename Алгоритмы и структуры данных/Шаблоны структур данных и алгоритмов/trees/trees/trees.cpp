@@ -162,8 +162,6 @@ public:
     }
 };
 
-
-
 int main()
 {
     Bin_tree <int> tree;
